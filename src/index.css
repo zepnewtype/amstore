@@ -1,0 +1,148 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+
+    --primary: 157 23% 39%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 7%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 7%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 157 23% 39%;
+
+    --radius: 0.25rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif;
+  }
+
+  .container-custom {
+    @apply w-full max-w-[1400px] px-4 md:px-6 lg:px-8 mx-auto;
+  }
+
+  .pattern-bg {
+    background-color: #4d7a6a;
+    background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20L0 20z' fill='%23ffffff' fill-opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  /* Улучшенные стили для мобильных устройств */
+  button,
+  a {
+    @apply touch-manipulation;
+  }
+
+  /* Скрыть полосу прокрутки, но сохранить функциональность */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE и Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari и Opera */
+  }
+
+  /* Стили для touch-устройств */
+  @media (hover: none) {
+    .touch\:opacity-100 {
+      opacity: 1;
+    }
+
+    .touch\:translate-y-0 {
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer components {
+  .fashion-btn {
+    @apply inline-block px-6 py-2 bg-brand-green text-white font-medium transition-all duration-200 hover:bg-brand-lightGreen active:scale-95;
+  }
+
+  .fashion-btn-outline {
+    @apply inline-block px-6 py-2 border border-brand-green text-brand-green font-medium transition-all duration-200 hover:bg-brand-green hover:text-white active:scale-95;
+  }
+
+  .gold-accent {
+    @apply text-[#D4AF37];
+  }
+
+  .product-line-item {
+    @apply border-t border-b border-gray-200 py-4 md:py-6 flex flex-col md:flex-row gap-4 md:gap-6;
+  }
+
+  .product-line-image {
+    @apply w-full md:w-1/4 flex-shrink-0;
+  }
+
+  .product-line-details {
+    @apply flex-grow space-y-2 md:space-y-3;
+  }
+
+  .line-item-title {
+    @apply text-base font-medium hover:text-brand-green transition-colors;
+  }
+
+  .cart-slide {
+    @apply fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-xl z-50 transform transition-transform duration-300;
+  }
+
+  .animate-hover-scale {
+    @apply transition-transform duration-300 hover:scale-105 active:scale-100;
+  }
+
+  /* Fixed the circular dependency by removing the self-reference */
+  .fade-in-element {
+    @apply opacity-0;
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

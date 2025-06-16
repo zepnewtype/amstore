@@ -1,0 +1,312 @@
+На основе полученных данных, я подготовил структуру для выгрузки информации о товарах и коллекциях вместе с SEO данными для использования на фронтенде. Вот необходимые переменные и их описание:
+Структура данных для товаров:
+
+// Структура товара
+const product = {
+  id: "gid://shopify/Product/7636551532662", // Уникальный идентификатор товара
+  title: "Espresso Cup - Mamma Mia", // Название товара
+  handle: "mamma-mia-espresso-cup", // URL-совместимый slug для товара
+  description: "Elevate your espresso experience...", // Полное описание товара
+  descriptionHtml: "<p>Elevate your espresso experience...</p>", // HTML-версия описания
+  productType: "Cup", // Тип товара
+  vendor: "Amprio Milano", // Производитель
+  status: "ACTIVE", // Статус товара (ACTIVE, ARCHIVED, DRAFT)
+  tags: ["collection_Mamma Mia", "Tableware", "Tea &amp; Coffee"], // Теги товара
+  createdAt: "2024-12-28T14:09:06Z", // Дата создания
+  updatedAt: "2025-05-18T20:17:39Z", // Дата обновления
+  
+  // SEO данные
+  seo: {
+    title: null, // SEO заголовок (если null, используйте title товара)
+    description: null // SEO описание (если null, используйте description товара)
+  },
+  
+  // Опции товара (например, цвет, размер)
+  options: [
+    {
+      id: "gid://shopify/ProductOption/10082840838262",
+      name: "Color",
+      values: ["Leaves", "Pomegranate", "Hand", "Love", "Strawberry", "Flower"]
+    }
+  ],
+  
+  // Варианты товара
+  variants: [
+    {
+      id: "gid://shopify/ProductVariant/41967546466422",
+      title: "Leaves",
+      sku: "ESPR.MAM01",
+      price: "80.00",
+      compareAtPrice: null, // Цена до скидки (если есть)
+      inventoryQuantity: 88 // Количество на складе
+    },
+    // Другие варианты...
+  ],
+  
+  // Медиафайлы товара (изображения)
+  media: [
+    {
+      id: "gid://shopify/MediaImage/25399544709238",
+      image: {
+        id: "gid://shopify/ImageSource/25411453878390",
+        altText: "Espresso Cup - Mamma Mia",
+        url: "https://cdn.shopify.com/s/files/1/0592/5152/3702/files/ESPR.MAM01_bdbb0a70-2185-4238-a0b7-3f136f16c453.png?v=1738224394"
+      }
+    },
+    // Другие изображения...
+  ],
+  
+  // Коллекции, в которых находится товар
+  collections: [
+    {
+      id: "gid://shopify/Collection/298805788790",
+      title: "Tableware",
+      handle: "tableware"
+    },
+    // Другие коллекции...
+  ]
+};
+Структура данных для коллекций:
+
+// Структура коллекции
+const collection = {
+  id: "gid://shopify/Collection/299710382198", // Уникальный идентификатор коллекции
+  title: "Mamma Mia", // Название коллекции
+  handle: "mamma-mia", // URL-совместимый slug для коллекции
+  description: "A kaleidoscope of colors...", // Описание коллекции
+  descriptionHtml: "<p>A kaleidoscope of colors...</p>", // HTML-версия описания
+  
+  // Изображение коллекции (если есть)
+  image: {
+    id: "gid://shopify/CollectionImage/1606548226166",
+    altText: null,
+    url: "https://cdn.shopify.com/s/files/1/0592/5152/3702/collections/MAMMA_MIA_melamine_-_table_1.jpg?v=1735894778"
+  },
+  
+  // SEO данные
+  seo: {
+    title: null, // SEO заголовок (если null, используйте title коллекции)
+    description: null // SEO описание (если null, используйте description коллекции)
+  },
+  
+  // Товары в коллекции (первые 5, для полного списка нужен дополнительный запрос)
+  products: [
+    {
+      id: "gid://shopify/Product/7648452345974",
+      title: "Melamine Dinner Plate - Mamma Mia",
+      handle: "mamma-mia-melamine-dinner-plate"
+    },
+    // Другие товары...
+  ]
+};
+GraphQL запросы для получения данных:
+
+Запрос для получения товаров:
+query ($first: Int, $after: String) {
+  products(first: $first, after: $after) {
+    edges {
+      node {
+        id
+        title
+        handle
+        description
+        descriptionHtml
+        productType
+        vendor
+        status
+        tags
+        createdAt
+        updatedAt
+        options {
+          id
+          name
+          values
+        }
+        seo {
+          title
+          description
+        }
+        variants(first: 100) {
+          edges {
+            node {
+              id
+              title
+              sku
+              price
+              compareAtPrice
+              inventoryQuantity
+            }
+          }
+        }
+        media(first: 10) {
+          edges {
+            node {
+              ... on MediaImage {
+                id
+                image {
+                  id
+                  altText
+                  url
+                }
+              }
+            }
+          }
+        }
+        collections(first: 10) {
+          edges {
+            node {
+              id
+              title
+              handle
+            }
+          }
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+Запрос для получения коллекций:
+query ($first: Int, $after: String) {
+  collections(first: $first, after: $after) {
+    edges {
+      node {
+        id
+        title
+        handle
+        description
+        descriptionHtml
+        image {
+          id
+          altText
+          url
+        }
+        seo {
+          title
+          description
+        }
+        products(first: 10) {
+          edges {
+            node {
+              id
+              title
+              handle
+            }
+          }
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+Пагинация для получения всех данных:
+
+Для получения всех товаров или коллекций, вам нужно использовать пагинацию. Вот пример кода для этого:
+// Пример функции для получения всех товаров с пагинацией
+async function getAllProducts() {
+  let allProducts = [];
+  let hasNextPage = true;
+  let endCursor = null;
+  
+  while (hasNextPage) {
+    // Выполнение GraphQL запроса с переменными first и after
+    const response = await executeGraphQLQuery({
+      query: productQuery,
+      variables: {
+        first: 100, // Максимум 100 товаров за запрос
+        after: endCursor
+      }
+    });
+    
+    // Добавление полученных товаров в общий массив
+    const products = response.data.products.edges.map(edge =&gt; edge.node);
+    allProducts = [...allProducts, ...products];
+    
+    // Обновление информации о пагинации
+    hasNextPage = response.data.products.pageInfo.hasNextPage;
+    endCursor = response.data.products.pageInfo.endCursor;
+  }
+  
+  return allProducts;
+}
+
+// Аналогичная функция для коллекций
+async function getAllCollections() {
+  // Похожая логика с использованием запроса для коллекций
+}
+Обработка SEO данных:
+
+Важно учесть, что SEO данные могут быть null. В этом случае рекомендуется использовать основные данные товара или коллекции:
+function getSEOTitle(product) {
+  return product.seo.title || product.title;
+}
+
+function getSEODescription(product) {
+  return product.seo.description || product.description;
+}
+Преобразование данных для фронтенда:
+
+Для удобства использования на фронтенде, вы можете преобразовать данные в более удобный формат:
+function transformProductForFrontend(product) {
+  return {
+    id: product.id,
+    title: product.title,
+    handle: product.handle,
+    url: `/products/${product.handle}`,
+    description: product.description,
+    descriptionHtml: product.descriptionHtml,
+    type: product.productType,
+    vendor: product.vendor,
+    status: product.status,
+    tags: product.tags,
+    createdAt: new Date(product.createdAt),
+    updatedAt: new Date(product.updatedAt),
+    
+    seo: {
+      title: getSEOTitle(product),
+      description: getSEODescription(product)
+    },
+    
+    options: product.options.map(option =&gt; ({
+      id: option.id,
+      name: option.name,
+      values: option.values
+    })),
+    
+    variants: product.variants.edges.map(edge =&gt; edge.node).map(variant =&gt; ({
+      id: variant.id,
+      title: variant.title,
+      sku: variant.sku,
+      price: parseFloat(variant.price),
+      compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+      inventoryQuantity: variant.inventoryQuantity
+    })),
+    
+    images: product.media.edges
+      .map(edge =&gt; edge.node)
+      .filter(node =&gt; node.__typename === "MediaImage")
+      .map(node =&gt; ({
+        id: node.id,
+        altText: node.image.altText || product.title,
+        url: node.image.url
+      })),
+    
+    collections: product.collections.edges.map(edge =&gt; edge.node).map(collection =&gt; ({
+      id: collection.id,
+      title: collection.title,
+      handle: collection.handle,
+      url: `/collections/${collection.handle}`
+    }))
+  };
+}
+
+// Аналогичная функция для коллекций
+function transformCollectionForFrontend(collection) {
+  // Похожая логика преобразования
+}
