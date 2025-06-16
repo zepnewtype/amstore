@@ -1,4 +1,3 @@
-
 import Layout from '../components/Layout';
 import Hero from '../components/Hero';
 import ProductGrid from '../components/ProductGrid';
@@ -122,6 +121,7 @@ const fadeInUp = {
 
 const Index = () => {
   return (
+    <Layout>
       <Hero />
       {/* Collection Carousel */}
       <section className="py-12">
@@ -321,6 +321,7 @@ const Index = () => {
       </section>
       
       {/* Newsletter and Contact sections have been removed */}
+    </Layout>
   );
 };
 
