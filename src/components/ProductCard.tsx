@@ -252,10 +252,11 @@ const ProductCard = ({
           </div>
           <button
             onClick={handleAddToCart}
-            className={`bg-brand-green text-white p-3 rounded-full transition-all ${isAddingToCart ? "scale-95 bg-brand-darkGreen" : "hover:bg-brand-lightGreen active:scale-95"}`}
+            className={`bg-brand-green text-white px-4 py-2 rounded-full transition-all flex items-center gap-2 text-sm font-medium ${isAddingToCart ? "scale-95 bg-brand-darkGreen" : "hover:bg-brand-lightGreen active:scale-95"}`}
             aria-label="Add to cart"
           >
-            <ShoppingBag size={18} />
+            <ShoppingBag size={16} />
+            Add to Cart
           </button>
         </div>
 

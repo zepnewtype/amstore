@@ -131,9 +131,9 @@ const Index = () => {
         subtitle="Handpicked Selection"
       />
       
-      {/* Collection Carousel - MOVED DOWN */}
+      {/* Collection Carousel - MOVED DOWN - FULL WIDTH */}
       <section className="py-12">
-        <div className="container-custom">
+        <div className="container-full">
           <div className="text-center mb-6">
             <motion.h2 
               className="text-3xl md:text-4xl font-serif mb-2"
@@ -203,19 +203,19 @@ const Index = () => {
         </div>
       </motion.section>
       
-      {/* HoReCa Products Section */}
+      {/* B2B Products Section - FULL WIDTH */}
       <section className="py-16">
-        <div className="container-custom">
+        <div className="container-full">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif mb-3">HoReCa Solutions</h2>
+            <h2 className="text-3xl md:text-4xl font-serif mb-3">B2B Solutions</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Professional-grade tableware designed for hotels, restaurants, beach clubs and yachts
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-10">
             {horecaProducts.map(product => (
-              <div key={product.id}>
+              <div key={product.id} className="w-full">
                 <ProductCard {...product} handle={`product-${product.id}`} />
               </div>
             ))}

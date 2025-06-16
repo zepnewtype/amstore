@@ -96,7 +96,7 @@ const ProductGrid = ({
   if (layout === 'scroll') {
     return (
       <section className="py-8 md:py-16">
-        <div className="container-custom">
+        <div className="container-full">
           {/* Optional section header */}
           {(title || subtitle) && (
             <div className="text-center mb-6 md:mb-12">
