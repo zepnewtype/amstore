@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Search, User, Phone, Truck } from 'lucide-react';
+import { Menu, X, Search, User, Phone, Truck, ChevronDown } from 'lucide-react';
 import Footer from './Footer';
 import Cart from './Cart';
 import CartIcon from './CartIcon';
@@ -21,6 +21,26 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+// Throttle function для оптимизации scroll events
+const throttle = (func: Function, delay: number) => {
+  let timeoutId: NodeJS.Timeout;
+  let lastExecTime = 0;
+  return function (...args: any[]) {
+    const currentTime = Date.now();
+    
+    if (currentTime - lastExecTime > delay) {
+      func(...args);
+      lastExecTime = currentTime;
+    } else {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func(...args);
+        lastExecTime = Date.now();
+      }, delay - (currentTime - lastExecTime));
+    }
+  };
+};
+
 const Layout = ({ children }: LayoutProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -28,14 +48,21 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const { toast } = useToast();
 
+  // Оптимизированный scroll handler с throttling
+  const handleScroll = useCallback(
+    throttle(() => {
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 50);
+    }, 16), // ~60fps
+    []
+  );
+
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    
-    window.addEventListener('scroll', handleScroll);
+    // Добавляем passive для улучшения производительности
+    const options = { passive: true };
+    window.addEventListener('scroll', handleScroll, options);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [handleScroll]);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -43,27 +70,15 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <>
-      {/* Announcement Bar - анимированный на мобильных, статичный на десктопе */}
-      <div className="bg-brand-green text-white py-2 md:py-4 px-4 text-xs md:text-sm h-auto md:h-14">
+      {/* Announcement Bar - убираем анимации carousel на мобильных */}
+      <div className="bg-brand-green text-white py-2 md:py-4 px-4 text-xs md:text-sm">
         <div className="container-custom flex flex-col md:flex-row justify-between items-center gap-1 md:gap-0">
-          {/* Мобильная версия: анимированный carousel */}
-          <div className="block md:hidden w-full">
-            <Carousel opts={{ loop: true, align: 'start' }}>
-              <CarouselContent>
-                <CarouselItem>
-                  <div className="flex items-center justify-center min-h-[28px]">
-                    <Truck size={16} className="mr-2" />
-                    <span>FAST SHIPPING IN UAE <a href="/shipping" className="underline ml-1">learn more</a></span>
-                  </div>
-                </CarouselItem>
-                <CarouselItem>
-                  <div className="flex items-center justify-center min-h-[28px]">
-                    <Phone size={16} className="mr-2" />
-                    <span>+971 52 177 3471</span>
-                  </div>
-                </CarouselItem>
-              </CarouselContent>
-            </Carousel>
+          {/* Мобильная версия: статичная, без carousel */}
+          <div className="block md:hidden w-full text-center">
+            <div className="flex items-center justify-center min-h-[28px]">
+              <Truck size={16} className="mr-2" />
+              <span>FAST SHIPPING IN UAE <a href="/shipping" className="underline ml-1">learn more</a></span>
+            </div>
           </div>
           {/* Десктопная версия: обычный flex */}
           <div className="hidden md:flex w-full justify-between items-center">
@@ -80,151 +95,173 @@ const Layout = ({ children }: LayoutProps) => {
       </div>
 
       <header
-        className={`sticky top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          isScrolled ? 'bg-white shadow-sm py-2' : 'bg-white py-6'
+        className={`sticky top-0 left-0 right-0 z-40 bg-white border-b transition-shadow duration-200 will-change-transform ${
+          isScrolled ? 'shadow-sm' : ''
         }`}
+        style={{
+          transform: 'translateZ(0)', // Форсируем GPU acceleration
+        }}
       >
         <div className="container-custom flex flex-col items-center">
-          {/* Hide logo completely when scrolled */}
-          {!isScrolled && (
-            <Link to="/" className="mb-6">
-              <img 
-                src="https://cdn.shopify.com/s/files/1/0592/5152/3702/files/AMP_LOGO_FULL.svg?v=1735227680" 
-                alt="Amprio Milano" 
-                className="h-28" 
-              />
-            </Link>
-          )}
+          {/* Компактный лого и навигация */}
+          <div className={`w-full transition-all duration-300 ease-in-out ${
+            isScrolled ? 'py-2' : 'py-6'
+          }`}>
+            {/* Лого - показываем компактную версию при скролле */}
+            <div className={`flex justify-center transition-all duration-300 ${
+              isScrolled ? 'mb-2' : 'mb-6'
+            }`}>
+              <Link to="/" className="flex items-center">
+                {isScrolled ? (
+                  <SmallLogo className="h-8" />
+                ) : (
+                  <img 
+                    src="https://cdn.shopify.com/s/files/1/0592/5152/3702/files/AMP_LOGO_FULL.svg?v=1735227680" 
+                    alt="Amprio Milano" 
+                    className="h-20 md:h-28" 
+                  />
+                )}
+              </Link>
+            </div>
 
-          <div className="w-full flex items-center justify-between">
-            {/* Mobile menu button */}
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden"
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            <div className="w-full flex items-center justify-between">
+              {/* Mobile menu button */}
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="md:hidden z-50 relative"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
 
-            {/* Desktop navigation with NavigationMenu */}
-            <div className="hidden md:block w-full">
-              <NavigationMenu className="mx-auto">
-                <NavigationMenuList className="justify-center">
-                  <NavigationMenuItem>
+              {/* Desktop navigation - оптимизированная версия с dropdown */}
+              <nav className="hidden md:flex justify-center flex-1">
+                <ul className="flex items-center space-x-6">
+                  <li>
                     <Link 
                       to="/" 
-                      className={`uppercase text-xs tracking-wide font-medium px-4 ${location.pathname === '/' ? 'text-brand-green' : 'text-gray-700 hover:text-brand-green transition-colors'}`}
+                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green ${
+                        location.pathname === '/' ? 'text-brand-green' : 'text-gray-700'
+                      }`}
                     >
                       New In
                     </Link>
-                  </NavigationMenuItem>
-
-                  <NavigationMenuItem>
+                  </li>
+                  <li>
                     <Link 
                       to="/products" 
-                      className={`uppercase text-xs tracking-wide font-medium px-4 ${location.pathname === '/products' ? 'text-brand-green' : 'text-gray-700 hover:text-brand-green transition-colors'}`}
+                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green ${
+                        location.pathname === '/products' ? 'text-brand-green' : 'text-gray-700'
+                      }`}
                     >
                       All Products
                     </Link>
-                  </NavigationMenuItem>
-
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="uppercase text-xs tracking-wide font-medium">Collections</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-2 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                        <li className="row-span-3">
-                          <NavigationMenuLink asChild>
+                  </li>
+                  
+                  {/* Collections Dropdown */}
+                  <li className="relative group">
+                    <button 
+                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green flex items-center ${
+                        location.pathname.includes('/collection') ? 'text-brand-green' : 'text-gray-700'
+                      }`}
+                    >
+                      Collections
+                      <ChevronDown size={12} className="ml-1" />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    <div className="absolute top-full left-0 mt-2 w-80 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
                             <Link
-                              className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-brand-lightGreen/50 to-brand-green/50 p-6 no-underline outline-none focus:shadow-md"
                               to="/collections"
+                              className="block p-3 rounded-md hover:bg-gray-50 transition-colors"
                             >
-                              <div className="mb-2 mt-4 text-lg font-medium text-black">
-                                All Collections
-                              </div>
-                              <p className="text-sm leading-tight text-black/90">
-                                Explore our curated collections of premium tableware and decorative items
+                              <div className="text-sm font-medium text-black mb-1">All Collections</div>
+                              <p className="text-xs text-gray-600">
+                                Browse all our curated collections
                               </p>
                             </Link>
-                          </NavigationMenuLink>
-                        </li>
-                        <li>
-                          <Link
-                            to="/collection/tableware"
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="text-sm font-medium leading-none">Tableware</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              Elegant dining solutions for every occasion
-                            </p>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            to="/collection/outdoor"
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="text-sm font-medium leading-none">Outdoor</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              Durable and stylish options for outdoor entertaining
-                            </p>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            to="/collection/home-decor"
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="text-sm font-medium leading-none">Home Decor</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              Accent pieces to elevate your interior
-                            </p>
-                          </Link>
-                        </li>
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
+                          </div>
+                          <div className="space-y-2">
+                            <Link
+                              to="/collection/tableware"
+                              className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
+                            >
+                              <div className="text-sm font-medium">Tableware</div>
+                              <p className="text-xs text-gray-600">Elegant dining solutions</p>
+                            </Link>
+                            <Link
+                              to="/collection/outdoor"
+                              className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
+                            >
+                              <div className="text-sm font-medium">Outdoor</div>
+                              <p className="text-xs text-gray-600">Outdoor entertaining</p>
+                            </Link>
+                            <Link
+                              to="/collection/home-decor"
+                              className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
+                            >
+                              <div className="text-sm font-medium">Interior accents</div>
+                              <p className="text-xs text-gray-600">Interior accents</p>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
 
-                  <NavigationMenuItem>
+                  <li>
                     <Link 
                       to="/tableware" 
-                      className={`uppercase text-xs tracking-wide font-medium px-4 ${location.pathname.includes('/tableware') ? 'text-brand-green' : 'text-gray-700 hover:text-brand-green transition-colors'}`}
+                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green ${
+                        location.pathname.includes('/tableware') ? 'text-brand-green' : 'text-gray-700'
+                      }`}
                     >
                       Tableware
                     </Link>
-                  </NavigationMenuItem>
-
-                  <NavigationMenuItem>
+                  </li>
+                  <li>
                     <Link 
                       to="/interior"
-                      className={`uppercase text-xs tracking-wide font-medium px-4 ${location.pathname.includes('/interior') ? 'text-brand-green' : 'text-gray-700 hover:text-brand-green transition-colors'}`}
+                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green ${
+                        location.pathname.includes('/interior') ? 'text-brand-green' : 'text-gray-700'
+                      }`}
                     >
                       Interior
                     </Link>
-                  </NavigationMenuItem>
-
-                  <NavigationMenuItem>
+                  </li>
+                  <li>
                     <Link 
                       to="/outdoor"
-                      className={`uppercase text-xs tracking-wide font-medium px-4 ${location.pathname.includes('/outdoor') ? 'text-brand-green' : 'text-gray-700 hover:text-brand-green transition-colors'}`}
+                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green ${
+                        location.pathname.includes('/outdoor') ? 'text-brand-green' : 'text-gray-700'
+                      }`}
                     >
                       Outdoor
                     </Link>
-                  </NavigationMenuItem>
+                  </li>
 
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="uppercase text-xs tracking-wide font-medium">Business</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="w-[600px] p-4">
+                  {/* Business Dropdown */}
+                  <li className="relative group">
+                    <button 
+                      className="uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green flex items-center text-gray-700"
+                    >
+                      Business
+                      <ChevronDown size={12} className="ml-1" />
+                    </button>
+                    
+                    {/* Business Dropdown Menu */}
+                    <div className="absolute top-full left-0 mt-2 w-96 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <h3 className="text-lg font-medium mb-2">HoReCa Solutions</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                              Premium tableware for hospitality businesses
-                            </p>
-                            <div className="grid grid-cols-2 gap-2">
+                            <h3 className="text-sm font-semibold mb-3">HoReCa Solutions</h3>
+                            <div className="space-y-2">
                               <Link
                                 to="/business/restaurants"
-                                className="flex items-center py-2 px-3 rounded-md hover:bg-muted"
+                                className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
                               >
                                 <div className="w-6 h-6 mr-2 flex items-center justify-center">
                                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -239,7 +276,7 @@ const Layout = ({ children }: LayoutProps) => {
                               </Link>
                               <Link
                                 to="/business/hotels"
-                                className="flex items-center py-2 px-3 rounded-md hover:bg-muted"
+                                className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
                               >
                                 <div className="w-6 h-6 mr-2 flex items-center justify-center">
                                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -254,7 +291,7 @@ const Layout = ({ children }: LayoutProps) => {
                               </Link>
                               <Link
                                 to="/business/beach-clubs"
-                                className="flex items-center py-2 px-3 rounded-md hover:bg-muted"
+                                className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
                               >
                                 <div className="w-6 h-6 mr-2 flex items-center justify-center">
                                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -269,7 +306,7 @@ const Layout = ({ children }: LayoutProps) => {
                               </Link>
                               <Link
                                 to="/business/yachts"
-                                className="flex items-center py-2 px-3 rounded-md hover:bg-muted"
+                                className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
                               >
                                 <div className="w-6 h-6 mr-2 flex items-center justify-center">
                                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -283,172 +320,145 @@ const Layout = ({ children }: LayoutProps) => {
                             </div>
                           </div>
                           <div>
-                            <h3 className="text-lg font-medium mb-2">Business Services</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                              Custom solutions and expert consultation
-                            </p>
-                            <ul className="space-y-2">
-                              <li>
-                                <Link
-                                  to="/business/consultation"
-                                  className="text-sm hover:text-brand-green"
-                                >
-                                  • Tableware Consultation
-                                </Link>
-                              </li>
-                              <li>
-                                <Link
-                                  to="/business/custom-orders"
-                                  className="text-sm hover:text-brand-green"
-                                >
-                                  • Custom Orders
-                                </Link>
-                              </li>
-                              <li>
-                                <Link
-                                  to="/business/wholesale"
-                                  className="text-sm hover:text-brand-green"
-                                >
-                                  • Wholesale Pricing
-                                </Link>
-                              </li>
-                              <li>
-                                <Link
-                                  to="/contact"
-                                  className="text-sm hover:text-brand-green"
-                                >
-                                  • Contact Business Team
-                                </Link>
-                              </li>
-                            </ul>
+                            <h3 className="text-sm font-semibold mb-3">Services</h3>
+                            <div className="space-y-2">
+                              <Link
+                                to="/business/consultation"
+                                className="block text-sm hover:text-brand-green transition-colors"
+                              >
+                                • Consultation
+                              </Link>
+                              <Link
+                                to="/business/custom-orders"
+                                className="block text-sm hover:text-brand-green transition-colors"
+                              >
+                                • Custom Orders
+                              </Link>
+                              <Link
+                                to="/business/wholesale"
+                                className="block text-sm hover:text-brand-green transition-colors"
+                              >
+                                • Wholesale Pricing
+                              </Link>
+                              <Link
+                                to="/contact"
+                                className="block text-sm hover:text-brand-green transition-colors"
+                              >
+                                • Contact Team
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
+                    </div>
+                  </li>
 
-                  <NavigationMenuItem>
+                  <li>
                     <Link 
                       to="/contact" 
-                      className={`uppercase text-xs tracking-wide font-medium px-4 ${location.pathname === '/contact' ? 'text-brand-green' : 'text-gray-700 hover:text-brand-green transition-colors'}`}
+                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green ${
+                        location.pathname === '/contact' ? 'text-brand-green' : 'text-gray-700'
+                      }`}
                     >
                       Contact
                     </Link>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
-            </div>
+                  </li>
+                </ul>
+              </nav>
 
-            {/* Icons */}
-            <div className="flex items-center space-x-5">
-              <Link to="/search" aria-label="Search" className="hover:text-brand-green transition-colors">
-                <Search size={22} />
-              </Link>
-              <Link to="/account" aria-label="Account" className="hover:text-brand-green transition-colors">
-                <User size={22} />
-              </Link>
-              <CartIcon />
+              {/* Icons */}
+              <div className="flex items-center space-x-4">
+                <Link to="/search" aria-label="Search" className="hover:text-brand-green transition-colors duration-200">
+                  <Search size={20} />
+                </Link>
+                <Link to="/account" aria-label="Account" className="hover:text-brand-green transition-colors duration-200">
+                  <User size={20} />
+                </Link>
+                <CartIcon />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t">
-            <nav className="container-custom py-4">
-              <ul className="space-y-4">
-                <li>
-                  <Link 
-                    to="/" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/' ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    New In
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/products" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/products' ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    All Products
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/collections" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/collections' || location.pathname.startsWith('/collection/') ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    Collections
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/tableware" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/tableware' ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    Tableware
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/interior" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname.includes('/interior') ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    Interior
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/outdoor" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/outdoor' ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    Outdoor
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/contact" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/contact' ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/about" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/about' ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/shipping" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/shipping' ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    Shipping
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/returns" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/returns' ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    Returns
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/privacy" 
-                    className={`block uppercase text-sm tracking-wide font-medium ${location.pathname === '/privacy' ? 'text-brand-green' : 'text-gray-700'}`}
-                  >
-                    Privacy Policy
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        )}
+        {/* Mobile menu - убираем сложные анимации */}
+        <div className={`md:hidden bg-white border-t transition-all duration-200 ${
+          isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+        }`}>
+          <nav className="container-custom py-4">
+            <ul className="space-y-3">
+              <li>
+                <Link 
+                  to="/" 
+                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
+                    location.pathname === '/' ? 'text-brand-green' : 'text-gray-700'
+                  }`}
+                >
+                  New In
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/products" 
+                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
+                    location.pathname === '/products' ? 'text-brand-green' : 'text-gray-700'
+                  }`}
+                >
+                  All Products
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/collections" 
+                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
+                    location.pathname === '/collections' || location.pathname.startsWith('/collection/') ? 'text-brand-green' : 'text-gray-700'
+                  }`}
+                >
+                  Collections
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/tableware" 
+                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
+                    location.pathname === '/tableware' ? 'text-brand-green' : 'text-gray-700'
+                  }`}
+                >
+                  Tableware
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/interior" 
+                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
+                    location.pathname.includes('/interior') ? 'text-brand-green' : 'text-gray-700'
+                  }`}
+                >
+                  Interior
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/outdoor" 
+                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
+                    location.pathname === '/outdoor' ? 'text-brand-green' : 'text-gray-700'
+                  }`}
+                >
+                  Outdoor
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/contact" 
+                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
+                    location.pathname === '/contact' ? 'text-brand-green' : 'text-gray-700'
+                  }`}
+                >
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </nav>
+        </div>
       </header>
 
       <main className="min-h-screen">
@@ -459,10 +469,10 @@ const Layout = ({ children }: LayoutProps) => {
       
       {/* Chatbot button */}
       <button 
-        className="fixed bottom-6 right-6 bg-brand-green text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:bg-brand-lightGreen transition-colors z-30"
+        className="fixed bottom-6 right-6 bg-brand-green text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:bg-brand-lightGreen transition-colors z-30"
         aria-label="Chat Support"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path>
         </svg>
       </button>

@@ -43,8 +43,24 @@
     @apply border-border;
   }
 
+  /* Оптимизация скролла для всей страницы */
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    /* Оптимизация для мобильных */
+    -webkit-overflow-scrolling: touch;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
+    /* Принудительное включение hardware acceleration */
+    transform: translateZ(0);
+    /* Оптимизация рендеринга */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Оптимизация скролла */
+    overscroll-behavior: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -64,10 +80,15 @@
 @layer components {
   .fashion-btn {
     @apply inline-block px-6 py-2 bg-brand-green text-white font-medium transition-all duration-200 hover:bg-brand-lightGreen;
+    /* GPU acceleration для кнопок */
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   .fashion-btn-outline {
     @apply inline-block px-6 py-2 border border-brand-green text-brand-green font-medium transition-all duration-200 hover:bg-brand-green hover:text-white;
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   .gold-accent {
@@ -92,22 +113,45 @@
   
   .cart-slide {
     @apply fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-xl z-50 transform transition-transform duration-300;
+    /* Оптимизация анимации корзины */
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
+  /* Оптимизированные hover эффекты */
   .animate-hover-scale {
-    @apply transition-transform duration-300 hover:scale-105;
+    transition: transform 0.2s ease-out;
+    will-change: transform;
   }
   
-  /* Fixed the circular dependency by removing the self-reference */
+  .animate-hover-scale:hover {
+    transform: scale(1.05) translateZ(0);
+  }
+  
   .fade-in-element {
     @apply opacity-0;
-    animation: fadeIn 0.8s ease-out forwards;
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  /* Оптимизация для sticky элементов */
+  .sticky-optimized {
+    position: sticky;
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 }
 
+/* Оптимизированные анимации */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { 
+    opacity: 0; 
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
 }
 
 /* Скрыть горизонтальный скроллбар для snap-scroll */
@@ -119,29 +163,68 @@
   display: none;
 }
 
-/* Убрать синий tap-эффект на мобильных */
-html {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Shimmer effect for skeleton loaders */
+/* Оптимизированный shimmer effect */
 .shimmer {
   position: relative;
   overflow: hidden;
-}
-.shimmer::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -150px;
-  width: 150px;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
   animation: shimmer 1.2s infinite;
 }
+
 @keyframes shimmer {
-  100% {
-    left: 100%;
+  0% {
+    background-position: -200% 0;
   }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Оптимизация производительности для элементов с анимациями */
+.performance-optimized {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+/* Оптимизация для изображений */
+img {
+  /* Улучшенная загрузка изображений */
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 200px;
+}
+
+/* Оптимизация для мобильных устройств */
+@media (max-width: 768px) {
+  body {
+    /* Отключаем некоторые анимации на мобильных для лучшей производительности */
+    animation-duration: 0.3s !important;
+    transition-duration: 0.2s !important;
+  }
+  
+  .animate-hover-scale:hover {
+    transform: none;
+  }
+}
+
+/* Принудительное использование GPU для критических элементов */
+header,
+nav,
+main,
+.sticky,
+[data-sticky] {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Оптимизация для длинных списков и grid */
+.product-grid {
+  contain: layout style paint;
+}
+
+.product-card {
+  contain: layout style paint;
+  transform: translateZ(0);
 }
 
