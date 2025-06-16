@@ -20,26 +20,6 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-// Throttle function для оптимизации scroll events
-const throttle = (func: Function, delay: number) => {
-  let timeoutId: NodeJS.Timeout;
-  let lastExecTime = 0;
-  return function (...args: any[]) {
-    const currentTime = Date.now();
-    
-    if (currentTime - lastExecTime > delay) {
-      func(...args);
-      lastExecTime = currentTime;
-    } else {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        func(...args);
-        lastExecTime = Date.now();
-      }, delay - (currentTime - lastExecTime));
-    }
-  };
-};
-
 const Layout = ({ children }: LayoutProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -47,19 +27,15 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // Оптимизированный scroll handler с throttling
-  const handleScroll = useCallback(
-    throttle(() => {
-      const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 50);
-    }, 16), // ~60fps
-    []
-  );
+  // Более простой и эффективный scroll handler без throttling - он сам браузером оптимизирован
+  const handleScroll = useCallback(() => {
+    const scrollY = window.scrollY;
+    setIsScrolled(scrollY > 50);
+  }, []);
 
   useEffect(() => {
-    // Добавляем passive для улучшения производительности
-    const options = { passive: true };
-    window.addEventListener('scroll', handleScroll, options);
+    // Passive listeners для лучшей производительности
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
@@ -69,17 +45,15 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <>
-      {/* Announcement Bar - убираем анимации carousel на мобильных */}
+      {/* Announcement Bar - упрощенная версия без анимаций */}
       <div className="bg-brand-green text-white py-2 md:py-4 px-4 text-xs md:text-sm">
         <div className="container-custom flex flex-col md:flex-row justify-between items-center gap-1 md:gap-0">
-          {/* Мобильная версия: статичная, без carousel */}
           <div className="block md:hidden w-full text-center">
             <div className="flex items-center justify-center min-h-[28px]">
               <Truck size={16} className="mr-2" />
               <span>FAST SHIPPING IN UAE <a href="/shipping" className="underline ml-1">learn more</a></span>
             </div>
           </div>
-          {/* Десктопная версия: обычный flex */}
           <div className="hidden md:flex w-full justify-between items-center">
             <div className="flex items-center">
               <Truck size={18} className="mr-2" />
@@ -93,32 +67,24 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       </div>
 
-      <header
-        className={`sticky top-0 left-0 right-0 z-40 bg-white border-b transition-shadow duration-200 will-change-transform ${
-          isScrolled ? 'shadow-sm' : ''
-        }`}
-        style={{
-          transform: 'translateZ(0)', // Форсируем GPU acceleration
-        }}
-      >
+      {/* Фиксированный header */}
+      <header className={`sticky top-0 left-0 right-0 z-40 bg-white border-b transition-shadow duration-200 ${isScrolled ? 'shadow-sm' : ''}`}>
         <div className="container-custom flex flex-col items-center">
-          {/* Компактная навигация - убираем лого при скролле */}
-          <div className={`w-full transition-all duration-300 ease-in-out ${
-            isScrolled ? 'py-3' : 'py-6'
-          }`}>
-            {/* Лого - показываем только когда НЕ скроллим */}
-            {!isScrolled && (
-              <div className="flex justify-center mb-6">
-                <Link to="/" className="flex items-center">
-                  <img 
-                    src="https://cdn.shopify.com/s/files/1/0592/5152/3702/files/AMP_LOGO_FULL.svg?v=1735227680" 
-                    alt="Amprio Milano" 
-                    className="h-20 md:h-28" 
-                  />
-                </Link>
-              </div>
-            )}
+          {/* Лого - показываем только когда НЕ скроллим */}
+          {!isScrolled && (
+            <div className="flex justify-center py-6">
+              <Link to="/" className="flex items-center">
+                <img 
+                  src="https://cdn.shopify.com/s/files/1/0592/5152/3702/files/AMP_LOGO_FULL.svg?v=1735227680" 
+                  alt="Amprio Milano" 
+                  className="h-20 md:h-28" 
+                />
+              </Link>
+            </div>
+          )}
 
+          {/* Навигация - всегда видна */}
+          <div className={`w-full transition-all duration-300 ${isScrolled ? 'py-4' : 'py-3'}`}>
             <div className="w-full flex items-center justify-between">
               {/* Mobile menu button */}
               <button 
@@ -129,7 +95,7 @@ const Layout = ({ children }: LayoutProps) => {
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
 
-              {/* Desktop navigation - оптимизированная версия с dropdown */}
+              {/* Desktop navigation */}
               <nav className="hidden md:flex justify-center flex-1">
                 <ul className="flex items-center space-x-6">
                   <li>
@@ -153,7 +119,7 @@ const Layout = ({ children }: LayoutProps) => {
                     </Link>
                   </li>
                   
-                  {/* Collections Dropdown */}
+                  {/* Collections Dropdown с картинкой */}
                   <li className="relative group">
                     <button 
                       className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green flex items-center ${
@@ -164,22 +130,33 @@ const Layout = ({ children }: LayoutProps) => {
                       <ChevronDown size={12} className="ml-1" />
                     </button>
                     
-                    {/* Dropdown Menu */}
-                    <div className="absolute top-full left-0 mt-2 w-80 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                      <div className="p-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
+                    {/* Dropdown Menu с картинкой и затемнением */}
+                    <div className="absolute top-full left-0 mt-2 w-96 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="flex">
+                        {/* Левая часть - картинка с затемнением */}
+                        <div className="w-1/3 relative">
+                          <div 
+                            className="h-full bg-cover bg-center rounded-l-md relative"
+                            style={{
+                              backgroundImage: `url('https://ampriomilano.com/cdn/shop/files/MAMMA_MIA_table_2000x.jpg?v=1743609613')`
+                            }}
+                          >
+                            {/* Затемнение */}
+                            <div className="absolute inset-0 bg-black bg-opacity-30 rounded-l-md"></div>
+                          </div>
+                        </div>
+                        
+                        {/* Правая часть - меню */}
+                        <div className="w-2/3 p-4">
+                          <div className="space-y-3">
                             <Link
                               to="/collections"
-                              className="block p-3 rounded-md hover:bg-gray-50 transition-colors"
+                              className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
                             >
                               <div className="text-sm font-medium text-black mb-1">All Collections</div>
-                              <p className="text-xs text-gray-600">
-                                Browse all our curated collections
-                              </p>
+                              <p className="text-xs text-gray-600">Browse all our curated collections</p>
                             </Link>
-                          </div>
-                          <div className="space-y-2">
+                            
                             <Link
                               to="/collection/tableware"
                               className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
@@ -187,6 +164,7 @@ const Layout = ({ children }: LayoutProps) => {
                               <div className="text-sm font-medium">Tableware</div>
                               <p className="text-xs text-gray-600">Elegant dining solutions</p>
                             </Link>
+                            
                             <Link
                               to="/collection/outdoor"
                               className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
@@ -194,12 +172,97 @@ const Layout = ({ children }: LayoutProps) => {
                               <div className="text-sm font-medium">Outdoor</div>
                               <p className="text-xs text-gray-600">Outdoor entertaining</p>
                             </Link>
+                            
                             <Link
                               to="/collection/home-decor"
                               className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
                             >
-                              <div className="text-sm font-medium">Interior accents</div>
-                              <p className="text-xs text-gray-600">Interior accents</p>
+                              <div className="text-sm font-medium">Home Decor</div>
+                              <p className="text-xs text-gray-600">Decorative accessories</p>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+
+                  {/* Business Dropdown с картинкой */}
+                  <li className="relative group">
+                    <button 
+                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green flex items-center ${
+                        location.pathname.includes('/business') ? 'text-brand-green' : 'text-gray-700'
+                      }`}
+                    >
+                      Business
+                      <ChevronDown size={12} className="ml-1" />
+                    </button>
+                    
+                    <div className="absolute top-full left-0 mt-2 w-96 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="flex">
+                        {/* Левая часть - картинка с затемнением */}
+                        <div className="w-1/3 relative">
+                          <div 
+                            className="h-full bg-cover bg-center rounded-l-md relative"
+                            style={{
+                              backgroundImage: `url('https://ampriomilano.com/cdn/shop/files/MAMMA_MIA_table_2000x.jpg?v=1743609613')`
+                            }}
+                          >
+                            <div className="absolute inset-0 bg-black bg-opacity-30 rounded-l-md"></div>
+                          </div>
+                        </div>
+                        
+                        {/* Правая часть - меню */}
+                        <div className="w-2/3 p-4">
+                          <div className="mb-3">
+                            <div className="text-sm font-medium text-black mb-2">HoReCa Solutions</div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Link to="/business/restaurants" className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors">
+                              <svg className="w-4 h-4 mr-2 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                              </svg>
+                              <div>
+                                <div className="text-sm font-medium">Restaurants</div>
+                                <p className="text-xs text-gray-600">Professional dining solutions</p>
+                              </div>
+                            </Link>
+                            
+                            <Link to="/business/hotels" className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors">
+                              <svg className="w-4 h-4 mr-2 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+                              </svg>
+                              <div>
+                                <div className="text-sm font-medium">Hotels</div>
+                                <p className="text-xs text-gray-600">Luxury hospitality tableware</p>
+                              </div>
+                            </Link>
+                            
+                            <Link to="/business/beach-clubs" className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors">
+                              <svg className="w-4 h-4 mr-2 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd"/>
+                              </svg>
+                              <div>
+                                <div className="text-sm font-medium">Beach Clubs</div>
+                                <p className="text-xs text-gray-600">Outdoor dining experiences</p>
+                              </div>
+                            </Link>
+                            
+                            <Link to="/business/yachts" className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors">
+                              <svg className="w-4 h-4 mr-2 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                              </svg>
+                              <div>
+                                <div className="text-sm font-medium">Yachts</div>
+                                <p className="text-xs text-gray-600">Marine dining excellence</p>
+                              </div>
+                            </Link>
+                          </div>
+                          
+                          <div className="mt-3 pt-3 border-t">
+                            <Link to="/business/services" className="block p-2 rounded-md hover:bg-gray-50 transition-colors">
+                              <div className="text-sm font-medium">Services</div>
+                              <p className="text-xs text-gray-600">Consultation & custom solutions</p>
                             </Link>
                           </div>
                         </div>
@@ -209,145 +272,14 @@ const Layout = ({ children }: LayoutProps) => {
 
                   <li>
                     <Link 
-                      to="/tableware" 
+                      to="/about" 
                       className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green ${
-                        location.pathname.includes('/tableware') ? 'text-brand-green' : 'text-gray-700'
+                        location.pathname === '/about' ? 'text-brand-green' : 'text-gray-700'
                       }`}
                     >
-                      Tableware
+                      About
                     </Link>
                   </li>
-                  <li>
-                    <Link 
-                      to="/interior"
-                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green ${
-                        location.pathname.includes('/interior') ? 'text-brand-green' : 'text-gray-700'
-                      }`}
-                    >
-                      Interior
-                    </Link>
-                  </li>
-                  <li>
-                    <Link 
-                      to="/outdoor"
-                      className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green ${
-                        location.pathname.includes('/outdoor') ? 'text-brand-green' : 'text-gray-700'
-                      }`}
-                    >
-                      Outdoor
-                    </Link>
-                  </li>
-
-                  {/* Business Dropdown */}
-                  <li className="relative group">
-                    <button 
-                      className="uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green flex items-center text-gray-700"
-                    >
-                      Business
-                      <ChevronDown size={12} className="ml-1" />
-                    </button>
-                    
-                    {/* Business Dropdown Menu */}
-                    <div className="absolute top-full left-0 mt-2 w-96 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                      <div className="p-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <h3 className="text-sm font-semibold mb-3">HoReCa Solutions</h3>
-                            <div className="space-y-2">
-                              <Link
-                                to="/business/restaurants"
-                                className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
-                              >
-                                <div className="w-6 h-6 mr-2 flex items-center justify-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                                    <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7"/>
-                                    <path d="M6 7v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/>
-                                    <path d="M3 7h18"/>
-                                    <path d="M9 14v2"/>
-                                    <path d="M15 14v2"/>
-                                  </svg>
-                                </div>
-                                <span className="text-sm">Restaurants</span>
-                              </Link>
-                              <Link
-                                to="/business/hotels"
-                                className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
-                              >
-                                <div className="w-6 h-6 mr-2 flex items-center justify-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                                    <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16"/>
-                                    <path d="M5 12h14"/>
-                                    <path d="M9 12v5"/>
-                                    <path d="M15 12v5"/>
-                                    <path d="M3 21h18"/>
-                                  </svg>
-                                </div>
-                                <span className="text-sm">Hotels</span>
-                              </Link>
-                              <Link
-                                to="/business/beach-clubs"
-                                className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
-                              >
-                                <div className="w-6 h-6 mr-2 flex items-center justify-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                                    <path d="M2 22a20.3 20.3 0 0 1 20 0"/>
-                                    <path d="M12 6a4 4 0 0 0-4 7h8a4 4 0 0 0-4-7z"/>
-                                    <path d="M12 3v3"/>
-                                    <path d="m6.82 7.3 2.12 2.13"/>
-                                    <path d="m15.06 9.43 2.12-2.13"/>
-                                  </svg>
-                                </div>
-                                <span className="text-sm">Beach Clubs</span>
-                              </Link>
-                              <Link
-                                to="/business/yachts"
-                                className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
-                              >
-                                <div className="w-6 h-6 mr-2 flex items-center justify-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                                    <path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                                    <path d="m20 20-5-18h-4c0 3-2 5-5 5v3a7 7 0 0 0 7 7h9.5"/>
-                                    <path d="M12 11h0"/>
-                                  </svg>
-                                </div>
-                                <span className="text-sm">Yachts</span>
-                              </Link>
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-semibold mb-3">Services</h3>
-                            <div className="space-y-2">
-                              <Link
-                                to="/business/consultation"
-                                className="block text-sm hover:text-brand-green transition-colors"
-                              >
-                                • Consultation
-                              </Link>
-                              <Link
-                                to="/business/custom-orders"
-                                className="block text-sm hover:text-brand-green transition-colors"
-                              >
-                                • Custom Orders
-                              </Link>
-                              <Link
-                                to="/business/wholesale"
-                                className="block text-sm hover:text-brand-green transition-colors"
-                              >
-                                • Wholesale Pricing
-                              </Link>
-                              <Link
-                                to="/contact"
-                                className="block text-sm hover:text-brand-green transition-colors"
-                              >
-                                • Contact Team
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-
                   <li>
                     <Link 
                       to="/contact" 
@@ -363,114 +295,60 @@ const Layout = ({ children }: LayoutProps) => {
 
               {/* Icons */}
               <div className="flex items-center space-x-4">
-                <Link to="/search" aria-label="Search" className="hover:text-brand-green transition-colors duration-200">
-                  <Search size={20} />
-                </Link>
-                <Link to="/account" aria-label="Account" className="hover:text-brand-green transition-colors duration-200">
-                  <User size={20} />
-                </Link>
-                <CartIcon />
+                <Search size={20} className="cursor-pointer hover:text-brand-green transition-colors" />
+                <User size={20} className="cursor-pointer hover:text-brand-green transition-colors" />
+                <CartIcon onOpenCart={() => setIsCartOpen(true)} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile menu - убираем сложные анимации */}
-        <div className={`md:hidden bg-white border-t transition-all duration-200 ${
-          isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
-        }`}>
-          <nav className="container-custom py-4">
-            <ul className="space-y-3">
-              <li>
-                <Link 
-                  to="/" 
-                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
-                    location.pathname === '/' ? 'text-brand-green' : 'text-gray-700'
-                  }`}
-                >
-                  New In
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/products" 
-                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
-                    location.pathname === '/products' ? 'text-brand-green' : 'text-gray-700'
-                  }`}
-                >
-                  All Products
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/collections" 
-                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
-                    location.pathname === '/collections' || location.pathname.startsWith('/collection/') ? 'text-brand-green' : 'text-gray-700'
-                  }`}
-                >
-                  Collections
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/tableware" 
-                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
-                    location.pathname === '/tableware' ? 'text-brand-green' : 'text-gray-700'
-                  }`}
-                >
-                  Tableware
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/interior" 
-                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
-                    location.pathname.includes('/interior') ? 'text-brand-green' : 'text-gray-700'
-                  }`}
-                >
-                  Interior
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/outdoor" 
-                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
-                    location.pathname === '/outdoor' ? 'text-brand-green' : 'text-gray-700'
-                  }`}
-                >
-                  Outdoor
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/contact" 
-                  className={`block uppercase text-sm tracking-wide font-medium py-2 ${
-                    location.pathname === '/contact' ? 'text-brand-green' : 'text-gray-700'
-                  }`}
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
+        {/* Mobile menu */}
+        {isMenuOpen && (
+          <div className="md:hidden fixed inset-0 bg-white z-50">
+            <div className="flex justify-between items-center p-4 border-b">
+              <img 
+                src="https://cdn.shopify.com/s/files/1/0592/5152/3702/files/AMP_LOGO_FULL.svg?v=1735227680" 
+                alt="Amprio Milano" 
+                className="h-12" 
+              />
+              <button onClick={() => setIsMenuOpen(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <nav className="p-4">
+              <ul className="space-y-4">
+                <li><Link to="/" className="block py-2 text-lg">New In</Link></li>
+                <li><Link to="/products" className="block py-2 text-lg">All Products</Link></li>
+                <li><Link to="/collections" className="block py-2 text-lg">Collections</Link></li>
+                <li><Link to="/business" className="block py-2 text-lg">Business</Link></li>
+                <li><Link to="/about" className="block py-2 text-lg">About</Link></li>
+                <li><Link to="/contact" className="block py-2 text-lg">Contact</Link></li>
+              </ul>
+            </nav>
+          </div>
+        )}
       </header>
 
+      {/* Main content */}
       <main className="min-h-screen">
         {children}
       </main>
 
       <Footer />
-      
+      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
       {/* Chatbot button */}
-      <button 
-        className="fixed bottom-6 right-6 bg-brand-green text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:bg-brand-lightGreen transition-colors z-30"
-        aria-label="Chat Support"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path>
-        </svg>
-      </button>
+      <div className="fixed bottom-6 right-6 z-50">
+        <button 
+          className="bg-brand-green text-white p-4 rounded-full shadow-lg hover:bg-brand-lightGreen transition-colors"
+          onClick={() => toast({ title: "Chat support coming soon!" })}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
+          </svg>
+        </button>
+      </div>
     </>
   );
 };

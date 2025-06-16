@@ -3,7 +3,6 @@ import Hero from '../components/Hero';
 import ProductGrid from '../components/ProductGrid';
 import ProductCard from '../components/ProductCard';
 import CollectionCarousel from '../components/CollectionCarousel';
-import TableSettingVisualizer from '../components/TableSettingVisualizer';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -216,7 +215,7 @@ const Index = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
             {horecaProducts.map(product => (
               <div key={product.id}>
-                <ProductCard {...product} />
+                <ProductCard {...product} handle={`product-${product.id}`} />
               </div>
             ))}
           </div>
@@ -231,96 +230,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-      
-      {/* Table Setting Visualizer */}
-      <section className="py-16 bg-gray-50">
-        <div className="container-custom">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif mb-3">Table Setting Service</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Let us help you create the perfect table setting for any occasion
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-10">
-            <div>
-              <TableSettingVisualizer />
-            </div>
-            <div className="flex flex-col justify-center">
-              <h3 className="text-2xl font-serif mb-4">Personalized Table Setting Consultation</h3>
-              <p className="text-gray-700 leading-relaxed mb-6">
-                Our expert designers can help you create the perfect table setting for any occasion, whether you're hosting an intimate dinner or a grand celebration.
-              </p>
-              
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start">
-                  <div className="mr-3 bg-brand-green/10 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green">
-                      <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/>
-                      <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
-                      <path d="M12 2v2"/>
-                      <path d="M12 22v-2"/>
-                      <path d="m17 20.66-1-1.73"/>
-                      <path d="M11 10.27 7 3.34"/>
-                      <path d="m20.66 17-1.73-1"/>
-                      <path d="m3.34 7 1.73 1"/>
-                      <path d="M14 12h8"/>
-                      <path d="M2 12h2"/>
-                      <path d="m20.66 7-1.73 1"/>
-                      <path d="m3.34 17 1.73-1"/>
-                      <path d="m17 3.34-1 1.73"/>
-                      <path d="m7 20.66-1-1.73"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-lg mb-1">Expert Consultation</h4>
-                    <p className="text-gray-600">Personalized advice from our tableware specialists</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <div className="mr-3 bg-brand-green/10 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green">
-                      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-                      <path d="M5 3v4"/>
-                      <path d="M19 17v4"/>
-                      <path d="M3 5h4"/>
-                      <path d="M17 19h4"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-lg mb-1">Custom Set Creation</h4>
-                    <p className="text-gray-600">Curated combinations tailored to your style and needs</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <div className="mr-3 bg-brand-green/10 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green">
-                      <rect width="18" height="18" x="3" y="3" rx="2"/>
-                      <path d="M3 9h18"/>
-                      <path d="M3 15h18"/>
-                      <path d="M9 3v18"/>
-                      <path d="M15 3v18"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-lg mb-1">Visual Presentations</h4>
-                    <p className="text-gray-600">See how your selections will look together before purchasing</p>
-                  </div>
-                </li>
-              </ul>
-              
-              <Link 
-                to="/contact" 
-                className="inline-block bg-brand-green text-white px-6 py-3 hover:bg-brand-lightGreen transition-colors"
-              >
-                Request Consultation
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Newsletter and Contact sections have been removed */}
     </Layout>
   );
 };
