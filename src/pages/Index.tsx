@@ -127,9 +127,9 @@ const Index = () => {
       {/* Featured products section - MOVED UP - УВЕЛИЧЕННЫЕ КАРТОЧКИ */}
       <section className="py-8 md:py-16">
         <div className="container-full">
-          <div className="text-center mb-6 md:mb-12">
-            <p className="uppercase tracking-wider text-sm text-brand-green mb-1 md:mb-2">Handpicked Selection</p>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif">Featured Products</h2>
+          <div className="text-center mb-8 md:mb-16">
+            <p className="uppercase tracking-wider text-sm text-gray-500 mb-2">Handpicked Selection</p>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-brand-green mb-4">Featured Products</h2>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -145,9 +145,18 @@ const Index = () => {
       {/* Collection Carousel - MOVED DOWN - FULL WIDTH */}
       <section className="py-12">
         <div className="container-full">
-          <div className="text-center mb-6">
+          <div className="text-center mb-8 md:mb-16">
+            <motion.p 
+              className="uppercase tracking-wider text-sm text-gray-500 mb-2"
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3 }}
+            >
+              Curated Selection
+            </motion.p>
             <motion.h2 
-              className="text-3xl md:text-4xl font-serif mb-2"
+              className="text-3xl md:text-4xl lg:text-5xl font-serif text-brand-green mb-4"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -156,7 +165,7 @@ const Index = () => {
               Explore Our Collections
             </motion.h2>
             <motion.p 
-              className="text-gray-600 max-w-2xl mx-auto"
+              className="text-gray-600 max-w-3xl mx-auto text-base md:text-lg"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -217,9 +226,10 @@ const Index = () => {
       {/* B2B Products Section - FULL WIDTH */}
       <section className="py-16 relative">
         <div className="container-full">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif mb-4 text-gray-900">B2B Solutions</h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+          <div className="text-center mb-8 md:mb-16">
+            <p className="uppercase tracking-wider text-sm text-gray-500 mb-2">Professional Solutions</p>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-brand-green mb-4">B2B Solutions</h2>
+            <p className="text-gray-600 max-w-3xl mx-auto text-base md:text-lg">
               Professional-grade tableware designed for hotels, restaurants, beach clubs and yachts
             </p>
           </div>

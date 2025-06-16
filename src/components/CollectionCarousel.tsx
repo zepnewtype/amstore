@@ -57,7 +57,7 @@ const CollectionCarousel = ({ collections }: CollectionCarouselProps) => {
   
   return (
     <div className="py-8">
-      {/* Grid of visible collections - УБРАНЫ ЭФФЕКТЫ */}
+      {/* Grid of visible collections - С ГРАДИЕНТОМ И БОЛЬШОЙ НАДПИСЬЮ */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {visibleCollections.map((collection, index) => (
           <div 
@@ -65,21 +65,31 @@ const CollectionCarousel = ({ collections }: CollectionCarouselProps) => {
             className="group cursor-pointer"
           >
             <div className="relative">
-              {/* Square image container - БЕЗ ТЕНИ И ЭФФЕКТОВ */}
+              {/* Square image container - С ГРАДИЕНТОМ СНИЗУ ВВЕРХ */}
               <div className="aspect-square relative overflow-hidden">
                 <img 
                   src={collection.image} 
                   alt={collection.name}
                   className="w-full h-full object-cover"
                 />
+                {/* ГРАДИЕНТ СНИЗУ ВВЕРХ - от темного к прозрачному */}
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0) 60%)'
+                  }}
+                ></div>
+                
+                {/* БОЛЬШАЯ НАДПИСЬ на изображении */}
+                <div className="absolute inset-0 flex items-end p-6">
+                  <h3 className="text-white font-serif text-4xl md:text-5xl font-bold leading-tight">
+                    {collection.name}
+                  </h3>
+                </div>
               </div>
               
               {/* Content below image */}
               <div className="pt-4 text-center">
-                <h3 className="text-xl font-serif mb-4 text-gray-900 group-hover:text-brand-green transition-colors">
-                  {collection.name}
-                </h3>
-                
                 <Link 
                   to={collection.link}
                   className="inline-block bg-brand-green text-white px-6 py-2 hover:bg-brand-lightGreen transition-colors duration-200 text-sm uppercase tracking-wide"

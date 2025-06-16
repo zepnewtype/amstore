@@ -29,22 +29,7 @@ export interface CartItem {
 }
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Milano Dinner Plate - Versailles",
-      price: 120,
-      image: "https://ampriomilano.com/cdn/shop/files/PLA3.MAM05_d45cf525-3092-41b6-9a16-624e47fed4b9_400x.png?v=1746355234",
-      quantity: 1
-    },
-    {
-      id: 2,
-      name: "Ecume White presentation plate",
-      price: 111.04,
-      image: "https://ampriomilano.com/cdn/shop/files/PLA3.MAM05_d45cf525-3092-41b6-9a16-624e47fed4b9_400x.png?v=1746355234",
-      quantity: 2
-    }
-  ]);
+  const [items, setItems] = useState<CartItem[]>([]);
   const { toast } = useToast();
 
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);

@@ -20,8 +20,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				serif: ['Playfair Display', 'serif'],
-				sans: ['Montserrat', 'sans-serif'],
+				serif: ['DM Serif Display', 'serif'],
+				sans: ['Plus Jakarta Sans', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
