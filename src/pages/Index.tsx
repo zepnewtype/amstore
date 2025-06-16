@@ -122,9 +122,7 @@ const fadeInUp = {
 
 const Index = () => {
   return (
-    <Layout>
       <Hero />
-      
       {/* Collection Carousel */}
       <section className="py-12">
         <div className="container-custom">
@@ -204,114 +202,6 @@ const Index = () => {
         </div>
       </motion.section>
       
-      {/* B2C and B2B Solutions */}
-      <section className="py-16 bg-gray-50">
-        <div className="container-custom">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif mb-3">Complete Solutions For Every Need</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Whether you're furnishing your home or your business, Amprio Milano offers premium products and services
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Consumer Solutions */}
-            <div className="bg-white p-8 shadow-sm rounded-lg">
-              <div className="mb-6 inline-flex items-center justify-center w-16 h-16 bg-brand-green/10 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green">
-                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-              </div>
-              <h3 className="text-2xl font-serif mb-4">For Your Home</h3>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green mr-2 mt-1">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Premium tableware for daily use and special occasions</span>
-                </li>
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green mr-2 mt-1">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Elegant home decor to elevate your living spaces</span>
-                </li>
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green mr-2 mt-1">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Durable outdoor collections for entertaining</span>
-                </li>
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green mr-2 mt-1">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Personalized shopping assistance</span>
-                </li>
-              </ul>
-              <Link 
-                to="/products" 
-                className="inline-block bg-brand-green text-white px-6 py-3 hover:bg-brand-lightGreen transition-colors"
-              >
-                Shop Collections
-              </Link>
-            </div>
-            
-            {/* Business Solutions */}
-            <div className="bg-white p-8 shadow-sm rounded-lg">
-              <div className="mb-6 inline-flex items-center justify-center w-16 h-16 bg-brand-green/10 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green">
-                  <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
-                  <path d="M9 22v-4h6v4"/>
-                  <path d="M8 6h.01"/>
-                  <path d="M16 6h.01"/>
-                  <path d="M12 6h.01"/>
-                  <path d="M12 10h.01"/>
-                  <path d="M8 10h.01"/>
-                  <path d="M16 10h.01"/>
-                  <path d="M12 14h.01"/>
-                  <path d="M8 14h.01"/>
-                  <path d="M16 14h.01"/>
-                </svg>
-              </div>
-              <h3 className="text-2xl font-serif mb-4">For Your Business</h3>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green mr-2 mt-1">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Commercial-grade tableware for restaurants & hotels</span>
-                </li>
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green mr-2 mt-1">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Custom solutions for beach clubs & yacht services</span>
-                </li>
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green mr-2 mt-1">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Wholesale pricing and bulk orders</span>
-                </li>
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-green mr-2 mt-1">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Dedicated business account management</span>
-                </li>
-              </ul>
-              <Link 
-                to="/business" 
-                className="inline-block bg-gray-800 text-white px-6 py-3 hover:bg-gray-700 transition-colors"
-              >
-                Business Solutions
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
       
       {/* HoReCa Products Section */}
       <section className="py-16">
@@ -431,7 +321,6 @@ const Index = () => {
       </section>
       
       {/* Newsletter and Contact sections have been removed */}
-    </Layout>
   );
 };
 

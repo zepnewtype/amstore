@@ -4,7 +4,6 @@ import { Menu, X, Search, User, Phone, Truck, ChevronDown } from 'lucide-react';
 import Footer from './Footer';
 import Cart from './Cart';
 import CartIcon from './CartIcon';
-import SmallLogo from './SmallLogo';
 import { useToast } from "@/hooks/use-toast";
 import {
   NavigationMenu,
@@ -103,26 +102,22 @@ const Layout = ({ children }: LayoutProps) => {
         }}
       >
         <div className="container-custom flex flex-col items-center">
-          {/* Компактный лого и навигация */}
+          {/* Компактная навигация - убираем лого при скролле */}
           <div className={`w-full transition-all duration-300 ease-in-out ${
-            isScrolled ? 'py-2' : 'py-6'
+            isScrolled ? 'py-3' : 'py-6'
           }`}>
-            {/* Лого - показываем компактную версию при скролле */}
-            <div className={`flex justify-center transition-all duration-300 ${
-              isScrolled ? 'mb-2' : 'mb-6'
-            }`}>
-              <Link to="/" className="flex items-center">
-                {isScrolled ? (
-                  <SmallLogo className="h-8" />
-                ) : (
+            {/* Лого - показываем только когда НЕ скроллим */}
+            {!isScrolled && (
+              <div className="flex justify-center mb-6">
+                <Link to="/" className="flex items-center">
                   <img 
                     src="https://cdn.shopify.com/s/files/1/0592/5152/3702/files/AMP_LOGO_FULL.svg?v=1735227680" 
                     alt="Amprio Milano" 
                     className="h-20 md:h-28" 
                   />
-                )}
-              </Link>
-            </div>
+                </Link>
+              </div>
+            )}
 
             <div className="w-full flex items-center justify-between">
               {/* Mobile menu button */}
