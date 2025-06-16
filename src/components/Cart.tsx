@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { X, ShoppingBag } from 'lucide-react';
@@ -7,10 +8,9 @@ import { useToast } from '@/hooks/use-toast';
 export const CartContext = createContext({
   items: [] as CartItem[],
   addToCart: (item: CartItem) => {},
-  removeItem: (id: string) => {},
-  updateQuantity: (id: string, quantity: number) => {},
+  removeItem: (id: number) => {},
+  updateQuantity: (id: number, quantity: number) => {},
   itemCount: 0,
-  clearCart: () => {},
 });
 
 export const useCart = () => useContext(CartContext);
@@ -21,35 +21,31 @@ interface CartProps {
 }
 
 export interface CartItem {
-  id: string;
+  id: number;
   name: string;
   price: number;
   image: string;
   quantity: number;
-  currency: string;
-  handle: string;
 }
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const { toast } = useToast();
-
-  // Load cart from localStorage on mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Failed to load cart from localStorage:', error);
-      }
+  const [items, setItems] = useState<CartItem[]>([
+    {
+      id: 1,
+      name: "Milano Dinner Plate - Versailles",
+      price: 120,
+      image: "https://ampriomilano.com/cdn/shop/files/PLA3.MAM05_d45cf525-3092-41b6-9a16-624e47fed4b9_400x.png?v=1746355234",
+      quantity: 1
+    },
+    {
+      id: 2,
+      name: "Ecume White presentation plate",
+      price: 111.04,
+      image: "https://ampriomilano.com/cdn/shop/files/PLA3.MAM05_d45cf525-3092-41b6-9a16-624e47fed4b9_400x.png?v=1746355234",
+      quantity: 2
     }
-  }, []);
-
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
-  }, [items]);
+  ]);
+  const { toast } = useToast();
 
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
 
@@ -73,7 +69,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  const updateQuantity = (id: string, newQuantity: number) => {
+  const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;
     
     setItems(items.map(item => 
@@ -81,16 +77,12 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     ));
   };
 
-  const removeItem = (id: string) => {
+  const removeItem = (id: number) => {
     setItems(items.filter(item => item.id !== id));
   };
 
-  const clearCart = () => {
-    setItems([]);
-  };
-
   return (
-    <CartContext.Provider value={{ items, addToCart, removeItem, updateQuantity, itemCount, clearCart }}>
+    <CartContext.Provider value={{ items, addToCart, removeItem, updateQuantity, itemCount }}>
       {children}
     </CartContext.Provider>
   );
@@ -99,18 +91,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 const Cart = ({ isOpen, onClose }: CartProps) => {
   const { items, updateQuantity, removeItem, itemCount } = useCart();
 
-  const formatPrice = (price: number, currency: string = "AED") => {
-    return new Intl.NumberFormat('en-AE', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price);
-  };
-
   // Calculate total
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = subtotal > 0 ? 20 : 0;
+  const shipping = 20;
   const total = subtotal + shipping;
 
   // Prevent body scrolling when cart is open
@@ -167,13 +150,13 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
                       <img 
                         src={item.image} 
                         alt={item.name} 
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                     
                     <div className="flex-grow">
                       <Link 
-                        to={`/products/${item.handle}`}
+                        to={`/product/${item.id}`}
                         onClick={onClose}
                         className="font-medium hover:text-brand-green transition-colors"
                       >
@@ -183,20 +166,20 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
                       <div className="flex items-center mt-2">
                         <button 
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                          className="w-8 h-8 border border-gray-300 flex items-center justify-center"
                         >
                           -
                         </button>
                         <span className="w-10 text-center">{item.quantity}</span>
                         <button 
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                          className="w-8 h-8 border border-gray-300 flex items-center justify-center"
                         >
                           +
                         </button>
                         
                         <div className="ml-auto">
-                          {formatPrice(item.price * item.quantity, item.currency)}
+                          {item.price} AED
                         </div>
                       </div>
                     </div>
@@ -220,15 +203,15 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>{formatPrice(subtotal)}</span>
+                    <span>{subtotal.toFixed(2)} AED</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping</span>
-                    <span>{formatPrice(shipping)}</span>
+                    <span>{shipping.toFixed(2)} AED</span>
                   </div>
                   <div className="flex justify-between font-medium text-lg pt-2 border-t">
                     <span>Total</span>
-                    <span>{formatPrice(total)}</span>
+                    <span>{total.toFixed(2)} AED</span>
                   </div>
                 </div>
                 

@@ -1,3 +1,4 @@
+
 import Layout from '../components/Layout';
 import Hero from '../components/Hero';
 import ProductGrid from '../components/ProductGrid';
@@ -7,10 +8,6 @@ import TableSettingVisualizer from '../components/TableSettingVisualizer';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { AnimatedProductShowcase } from '@/components/AnimatedProductShowcase';
-import { useEffect, useState } from 'react';
-import { shopifyProducts } from '@/api/shopifyProducts';
-import { ShopifyCollection } from '@/api/types';
 
 const featuredProducts = [
   {
@@ -44,6 +41,38 @@ const featuredProducts = [
     hoverImage: "https://ampriomilano.com/cdn/shop/files/PLA3.MAM05_d45cf525-3092-41b6-9a16-624e47fed4b9_400x.png?v=1746355234",
     isSale: true,
     salePrice: 90
+  }
+];
+
+// Collection carousel data
+const collections = [
+  {
+    id: 1,
+    name: "Ortigia Collection",
+    image: "https://ampriomilano.com/cdn/shop/files/PLA3.MAM05_d45cf525-3092-41b6-9a16-624e47fed4b9_400x.png?v=1746355234",
+    link: "/collection/ortigia",
+    description: "The new and elegant Ortigia Collection creates a perfect balance between style and functionality."
+  },
+  {
+    id: 2,
+    name: "Versailles Collection",
+    image: "https://ampriomilano.com/cdn/shop/files/PLA3.MAM05_d45cf525-3092-41b6-9a16-624e47fed4b9_400x.png?v=1746355234",
+    link: "/collection/versailles",
+    description: "Timeless elegance inspired by the grandeur of French palaces, perfect for formal dining experiences."
+  },
+  {
+    id: 3,
+    name: "Milano Collection",
+    image: "https://ampriomilano.com/cdn/shop/files/PLA3.MAM05_d45cf525-3092-41b6-9a16-624e47fed4b9_400x.png?v=1746355234",
+    link: "/collection/milano",
+    description: "Modern sophistication with an Italian flair, designed for contemporary dining spaces."
+  },
+  {
+    id: 4,
+    name: "Coastal Collection",
+    image: "https://ampriomilano.com/cdn/shop/files/PLA3.MAM05_d45cf525-3092-41b6-9a16-624e47fed4b9_400x.png?v=1746355234",
+    link: "/collection/coastal",
+    description: "Inspired by the Mediterranean coastline, featuring fresh blues and sandy neutrals."
   }
 ];
 
@@ -92,30 +121,9 @@ const fadeInUp = {
 };
 
 const Index = () => {
-  const [collections, setCollections] = useState<ShopifyCollection[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCollections = async () => {
-      try {
-        const fetchedCollections = await shopifyProducts.getCollections();
-        setCollections(fetchedCollections);
-      } catch (error) {
-        console.error("Error fetching collections:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCollections();
-  }, []);
-
   return (
     <Layout>
       <Hero />
-      
-      {/* New Animated Product Showcase */}
-      <AnimatedProductShowcase />
       
       {/* Collection Carousel */}
       <section className="py-12">

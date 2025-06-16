@@ -1,113 +1,79 @@
-"use client"
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import Layout from '../components/Layout';
+import { getCollectionByHandle, getProductByHandle } from '../api/shopifyProducts';
+import { Helmet } from 'react-helmet';
 
-import { useEffect, useState } from "react"
-import { useParams, useSearchParams } from "react-router-dom"
-import { ProductGrid } from "@/components/ProductGrid"
-import { FilterSidebar } from "@/components/filters/FilterSidebar"
-import { SortDropdown } from "@/components/filters/SortDropdown"
-import { shopifyProducts } from "@/api/shopifyProducts"
-import { ShopifyProduct, ShopifyCollection } from "@/api/types"
-import { ITEMS_PER_PAGE } from "@/lib/constants"
+function formatPrice(amount: number, currency: string) {
+  return new Intl.NumberFormat('en-AE', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
 
-export default function Collection() {
-  const { handle } = useParams<{ handle: string }>()
-  const [collection, setCollection] = useState<ShopifyCollection | null>(null)
-  const [products, setProducts] = useState<ShopifyProduct[]>([])
-  const [loading, setLoading] = useState(true)
-  const [totalProducts, setTotalProducts] = useState(0)
-  const searchParams = useSearchParams()
-  const page = Number(searchParams.get("page")) || 1
-  const sort = searchParams.get("sort") || "featured"
-  const minPrice = Number(searchParams.get("minPrice")) || 0
-  const maxPrice = Number(searchParams.get("maxPrice")) || 1000
+const fallbackImg = '/fallback-product.png';
 
-  useEffect(() => {
-    const fetchCollection = async () => {
-      if (!handle) return
-      try {
-        const fetchedCollection = await shopifyProducts.getCollectionByHandle(handle)
-        setCollection(fetchedCollection)
-      } catch (error) {
-        console.error("Error fetching collection:", error)
-      }
-    }
-
-    fetchCollection()
-  }, [handle])
+const Collection = () => {
+  const { handle } = useParams<{ handle: string }>();
+  const [collection, setCollection] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      if (!handle) return
-      setLoading(true)
-      try {
-        const fetchedProducts = await shopifyProducts.getProducts({
-          first: ITEMS_PER_PAGE,
-          after: page > 1 ? ((page - 1) * ITEMS_PER_PAGE).toString() : undefined,
-          sortKey: sort,
-          collectionHandle: handle,
-          minPrice: minPrice || undefined,
-          maxPrice: maxPrice || undefined,
-        })
-        setProducts(fetchedProducts.products)
-        setTotalProducts(fetchedProducts.totalCount)
-      } catch (error) {
-        console.error("Error fetching products:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
+    if (!handle) return;
+    setLoading(true);
+    getCollectionByHandle(handle)
+      .then(async (col) => {
+        setCollection(col);
+        if (col && col.products) {
+          // Загружаем полные данные о каждом товаре коллекции
+          const prods = await Promise.all(
+            col.products.map((p: any) => getProductByHandle(p.handle))
+          );
+          setProducts(prods.filter(Boolean));
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [handle]);
 
-    fetchProducts()
-  }, [handle, page, sort, minPrice, maxPrice])
-
-  if (!collection) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Collection not found</h1>
-          <p className="text-gray-600">The collection you're looking for doesn't exist or has been removed.</p>
-        </div>
-      </div>
-    )
-  }
+  if (loading) return <div>Загрузка...</div>;
+  if (!collection) return <div>Коллекция не найдена</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Collection Header */}
-      <div className="mb-8">
+    <>
+      <Helmet>
+        <title>{collection.seo?.title || collection.title}</title>
+        <meta name="description" content={collection.seo?.description || collection.description} />
+        {collection.image?.url && <meta property="og:image" content={collection.image.url} />}
+      </Helmet>
+      <Layout>
         <h1 className="text-3xl font-bold mb-4">{collection.title}</h1>
-        {collection.description && (
-          <div 
-            className="prose max-w-none text-gray-600"
-            dangerouslySetInnerHTML={{ __html: collection.description }}
-          />
+        {collection.image?.url && (
+          <img src={collection.image.url} alt={collection.image?.altText || collection.title} className="mb-6 max-w-xl rounded" />
         )}
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Filters Sidebar */}
-        <div className="w-full md:w-64 flex-shrink-0">
-          <FilterSidebar />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <Link key={product.id} to={`/products/${product.handle}`} className="block group">
+              <div className="bg-gray-100 aspect-square flex items-center justify-center rounded mb-2 overflow-hidden">
+                <img
+                  src={product.images[0]?.url || fallbackImg}
+                  alt={product.images[0]?.altText || product.title}
+                  className="object-contain w-full h-full group-hover:scale-105 transition"
+                  loading="lazy"
+                />
+              </div>
+              <div className="font-medium text-base mb-1 truncate">{product.title}</div>
+              <div className="text-sm text-gray-600 font-semibold">
+                {product.variants[0]?.price ? formatPrice(product.variants[0].price, product.variants[0].currency || 'AED') : '—'}
+              </div>
+            </Link>
+          ))}
         </div>
+      </Layout>
+    </>
+  );
+};
 
-        {/* Products Grid */}
-        <div className="flex-1">
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-gray-600">
-              {totalProducts} {totalProducts === 1 ? 'product' : 'products'}
-            </p>
-            <SortDropdown />
-          </div>
-
-          <ProductGrid 
-            products={products}
-            loading={loading}
-            totalProducts={totalProducts}
-            currentPage={page}
-            itemsPerPage={ITEMS_PER_PAGE}
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
+export default Collection;

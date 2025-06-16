@@ -1,83 +1,66 @@
-"use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { Minus, Plus } from "lucide-react"
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Minus, Plus } from 'lucide-react';
 
 interface ProductQuantitySelectorProps {
-  initialQuantity?: number
-  onQuantityChange: (quantity: number) => void
-  max?: number
+  initialQuantity?: number;
+  onQuantityChange?: (quantity: number) => void;
 }
 
-const ProductQuantitySelector = ({ initialQuantity = 1, onQuantityChange, max = 99 }: ProductQuantitySelectorProps) => {
-  const [quantity, setQuantity] = useState(initialQuantity)
-  const [isDecreasing, setIsDecreasing] = useState(false)
-  const [isIncreasing, setIsIncreasing] = useState(false)
+const ProductQuantitySelector = ({ 
+  initialQuantity = 1, 
+  onQuantityChange 
+}: ProductQuantitySelectorProps) => {
+  const [quantity, setQuantity] = useState(initialQuantity);
 
-  useEffect(() => {
-    onQuantityChange(quantity)
-  }, [quantity, onQuantityChange])
+  const handleIncrement = () => {
+    const newQuantity = quantity + 1;
+    setQuantity(newQuantity);
+    if (onQuantityChange) {
+      onQuantityChange(newQuantity);
+    }
+  };
 
-  const handleDecrease = () => {
+  const handleDecrement = () => {
     if (quantity > 1) {
-      setIsDecreasing(true)
-      setTimeout(() => setIsDecreasing(false), 150)
-      setQuantity((prev) => prev - 1)
+      const newQuantity = quantity - 1;
+      setQuantity(newQuantity);
+      if (onQuantityChange) {
+        onQuantityChange(newQuantity);
+      }
     }
-  }
-
-  const handleIncrease = () => {
-    if (quantity < max) {
-      setIsIncreasing(true)
-      setTimeout(() => setIsIncreasing(false), 150)
-      setQuantity((prev) => prev + 1)
-    }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number.parseInt(e.target.value)
-    if (!isNaN(value) && value >= 1 && value <= max) {
-      setQuantity(value)
-    }
-  }
+  };
 
   return (
-    <div className="mt-6">
-      <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-2">
-        Quantity
-      </label>
-      <div className="flex items-center border border-gray-300 rounded-md w-full max-w-[180px] overflow-hidden">
-        <button
-          type="button"
-          onClick={handleDecrease}
-          className={`p-3 text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors ${isDecreasing ? "scale-95" : ""}`}
-          aria-label="Decrease quantity"
-          disabled={quantity <= 1}
+    <motion.div 
+      className="mb-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4 }}
+    >
+      <h3 className="text-sm font-medium mb-3">Quantity</h3>
+      <div className="flex">
+        <motion.button 
+          onClick={handleDecrement}
+          className="border border-r-0 border-gray-300 w-12 h-12 flex items-center justify-center hover:bg-gray-50 rounded-l-sm"
+          whileTap={{ scale: 0.9 }}
         >
-          <Minus size={16} />
-        </button>
-        <input
-          type="text"
-          id="quantity"
-          value={quantity}
-          onChange={handleChange}
-          className="w-12 text-center border-none focus:ring-0 focus:outline-none"
-          aria-label="Quantity"
-        />
-        <button
-          type="button"
-          onClick={handleIncrease}
-          className={`p-3 text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors ${isIncreasing ? "scale-95" : ""}`}
-          aria-label="Increase quantity"
-          disabled={quantity >= max}
+          <Minus size={18} />
+        </motion.button>
+        <div className="border-y border-gray-300 h-12 w-16 flex items-center justify-center font-medium">
+          {quantity}
+        </div>
+        <motion.button 
+          onClick={handleIncrement}
+          className="border border-l-0 border-gray-300 w-12 h-12 flex items-center justify-center hover:bg-gray-50 rounded-r-sm"
+          whileTap={{ scale: 0.9 }}
         >
-          <Plus size={16} />
-        </button>
+          <Plus size={18} />
+        </motion.button>
       </div>
-    </div>
-  )
-}
+    </motion.div>
+  );
+};
 
-export default ProductQuantitySelector
+export default ProductQuantitySelector;

@@ -1,148 +1,94 @@
-"use client"
+import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 
-import { useState } from "react"
-import { useSearchParams, useNavigate } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import { Slider } from "@/components/ui/slider"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { X } from "lucide-react"
+interface FilterSidebarProps {
+  filterOptions: {
+    productTypes: string[];
+    vendors: string[];
+    colors: string[];
+    tags: string[];
+  };
+  filters: Record<string, string>;
+  setFilters: (filters: Record<string, string>) => void;
+}
 
-const priceRanges = [
-  { label: "Under 100 AED", value: [0, 100] },
-  { label: "100 AED - 200 AED", value: [100, 200] },
-  { label: "200 AED - 500 AED", value: [200, 500] },
-  { label: "500 AED and above", value: [500, 1000] },
-]
+const FilterSidebar = ({ filterOptions, filters, setFilters }: FilterSidebarProps) => {
+  const sections = [
+    { id: 'productType', name: 'Product Type', options: filterOptions.productTypes },
+    { id: 'vendor', name: 'Vendor', options: filterOptions.vendors },
+    { id: 'color', name: 'Color', options: filterOptions.colors },
+    // Можно добавить tags, price, inStock и т.д.
+  ];
 
-const categories = [
-  "Dinnerware",
-  "Drinkware",
-  "Flatware",
-  "Serveware",
-  "Table Linens",
-  "Home Decor",
-]
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
+    sections.reduce((acc, filter) => ({ ...acc, [filter.id]: true }), {})
+  );
 
-export function FilterSidebar() {
-  const searchParams = useSearchParams()
-  const navigate = useNavigate()
-  const [priceRange, setPriceRange] = useState<[number, number]>([
-    Number(searchParams.get("minPrice")) || 0,
-    Number(searchParams.get("maxPrice")) || 1000,
-  ])
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    searchParams.get("categories")?.split(",") || []
-  )
+  const toggleSection = (sectionId: string) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  };
 
-  const updateFilters = (newParams: Record<string, string>) => {
-    const current = new URLSearchParams(Array.from(searchParams.entries()))
-    
-    // Update or remove params
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value) {
-        current.set(key, value)
-      } else {
-        current.delete(key)
-      }
-    })
+  const handleFilterChange = (filterId: string, value: string) => {
+    const newFilters = { ...filters };
+    if (filters[filterId] === value) {
+      delete newFilters[filterId];
+    } else {
+      newFilters[filterId] = value;
+    }
+    setFilters(newFilters);
+  };
 
-    // Reset to page 1 when filters change
-    current.set("page", "1")
-
-    // Update URL
-    navigate(`?${current.toString()}`)
-  }
-
-  const handlePriceChange = (value: number[]) => {
-    setPriceRange(value as [number, number])
-    updateFilters({
-      minPrice: value[0].toString(),
-      maxPrice: value[1].toString(),
-    })
-  }
-
-  const handleCategoryToggle = (category: string) => {
-    const newCategories = selectedCategories.includes(category)
-      ? selectedCategories.filter((c) => c !== category)
-      : [...selectedCategories, category]
-
-    setSelectedCategories(newCategories)
-    updateFilters({
-      categories: newCategories.join(","),
-    })
-  }
-
-  const clearFilters = () => {
-    setPriceRange([0, 1000])
-    setSelectedCategories([])
-    navigate("")
-  }
+  const clearAllFilters = () => {
+    setFilters({});
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Filters</h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={clearFilters}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <X className="h-4 w-4 mr-1" />
-          Clear all
-        </Button>
-      </div>
-
-      {/* Price Range */}
-      <div className="space-y-4">
-        <h4 className="font-medium">Price Range</h4>
-        <Slider
-          value={priceRange}
-          onValueChange={handlePriceChange}
-          min={0}
-          max={1000}
-          step={10}
-          className="w-full"
-        />
-        <div className="flex justify-between text-sm text-gray-500">
-          <span>{priceRange[0]} AED</span>
-          <span>{priceRange[1]} AED</span>
-        </div>
-      </div>
-
-      {/* Quick Price Ranges */}
-      <div className="space-y-2">
-        {priceRanges.map((range) => (
-          <Button
-            key={range.label}
-            variant="ghost"
-            className="w-full justify-start text-sm"
-            onClick={() => handlePriceChange(range.value)}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-serif">Filter</h2>
+        {Object.values(filters).filter(Boolean).length > 0 && (
+          <button 
+            onClick={clearAllFilters}
+            className="text-xs text-brand-green hover:underline"
           >
-            {range.label}
-          </Button>
-        ))}
+            Clear all
+          </button>
+        )}
       </div>
-
-      {/* Categories */}
-      <div className="space-y-4">
-        <h4 className="font-medium">Categories</h4>
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <div key={category} className="flex items-center space-x-2">
-              <Checkbox
-                id={category}
-                checked={selectedCategories.includes(category)}
-                onCheckedChange={() => handleCategoryToggle(category)}
-              />
-              <Label htmlFor={category} className="text-sm">
-                {category}
-              </Label>
+      {sections.map((filter) => (
+        <div key={filter.id} className="border-b border-gray-200 pb-4">
+          <button
+            onClick={() => toggleSection(filter.id)}
+            className="flex justify-between items-center w-full py-2 text-left"
+          >
+            <span className="font-medium">{filter.name}</span>
+            <ChevronDown
+              size={16}
+              className={`transform transition-transform ${openSections[filter.id] ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {openSections[filter.id] && (
+            <div className="mt-2 space-y-2">
+              {filter.options.map((option) => (
+                <label key={option} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="mr-2 h-4 w-4 rounded border-gray-300 text-brand-green focus:ring-brand-green"
+                    checked={filters[filter.id] === option}
+                    onChange={() => handleFilterChange(filter.id, option)}
+                  />
+                  <span className="text-sm flex-1">{option}</span>
+                </label>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-      </div>
+      ))}
     </div>
-  )
-}
+  );
+};
+
+export default FilterSidebar;

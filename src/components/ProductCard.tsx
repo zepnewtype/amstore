@@ -8,7 +8,7 @@ import { useCart } from "./Cart"
 import { ShoppingBag, ImageOff } from "lucide-react"
 
 interface ProductCardProps {
-  id: string
+  id: number
   name: string
   price: number
   image: string
@@ -18,11 +18,10 @@ interface ProductCardProps {
   salePrice?: number
   itemNo?: string
   diameter?: string
-  inStock?: boolean
+  inStock?: number
+  deliveryTime?: string
   currency?: string
-  productType?: string
-  vendor?: string
-  tags?: string[]
+  category?: string
   description?: string
   handle: string
 }
@@ -38,11 +37,10 @@ const ProductCard = ({
   salePrice,
   itemNo,
   diameter,
-  inStock = true,
+  inStock,
+  deliveryTime,
   currency = "AED",
-  productType,
-  vendor,
-  tags = [],
+  category,
   description,
   handle,
 }: ProductCardProps) => {
@@ -51,20 +49,9 @@ const ProductCard = ({
   const [quantity, setQuantity] = useState(1)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-AE', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price)
-  }
-
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-
-    if (!inStock) return
 
     setIsAddingToCart(true)
     addToCart({
@@ -73,10 +60,9 @@ const ProductCard = ({
       price: isSale && salePrice ? salePrice : price,
       image: image || "",
       quantity: quantity,
-      currency,
-      handle
     })
 
+    // Анимация добавления в корзину
     setTimeout(() => {
       setIsAddingToCart(false)
     }, 800)
@@ -98,11 +84,11 @@ const ProductCard = ({
 
   // HoReCa category icon
   const renderCategoryIcon = () => {
-    if (!productType) return null
+    if (!category) return null
 
     let icon = null
 
-    switch (productType) {
+    switch (category) {
       case "restaurant":
         icon = (
           <svg
@@ -190,7 +176,7 @@ const ProductCard = ({
     }
 
     return (
-      <div className="absolute top-2 right-2 bg-white/80 p-1 rounded-full" title={`Recommended for ${productType}`}>
+      <div className="absolute top-2 right-2 bg-white/80 p-1 rounded-full" title={`Recommended for ${category}`}>
         {icon}
       </div>
     )
@@ -215,89 +201,96 @@ const ProductCard = ({
         </div>
 
         {/* Product badges */}
-        <div className="absolute top-2 left-2 flex flex-col gap-2">
+        <div className="absolute bottom-2 left-2 flex flex-col gap-2">
           {isNew && <span className="bg-brand-green text-white text-xs py-1 px-2 uppercase tracking-wide">New</span>}
           {isSale && <span className="bg-[#E53935] text-white text-xs py-1 px-2 uppercase tracking-wide">Sale</span>}
-          {!inStock && <span className="bg-gray-500 text-white text-xs py-1 px-2 uppercase tracking-wide">Out of Stock</span>}
         </div>
 
-        {/* Quick add to cart with quantity selector */}
-        {inStock && (
-          <div className="absolute bottom-2 right-2 flex flex-col gap-2 opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 touch:opacity-100 touch:translate-y-0">
-            <div className="bg-white shadow-md rounded-md flex items-center overflow-hidden">
-              <button
-                onClick={decreaseQuantity}
-                className="p-2 hover:bg-gray-100 active:bg-gray-200 transition-colors"
-                aria-label="Decrease quantity"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14"></path>
-                </svg>
-              </button>
-              <span className="px-3 min-w-[24px] text-center">{quantity}</span>
-              <button
-                onClick={increaseQuantity}
-                className="p-2 hover:bg-gray-100 active:bg-gray-200 transition-colors"
-                aria-label="Increase quantity"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 5v14"></path>
-                  <path d="M5 12h14"></path>
-                </svg>
-              </button>
-            </div>
+        {/* Quick add to cart with quantity selector - улучшенная версия для мобильных */}
+        <div className="absolute bottom-2 right-2 flex flex-col gap-2 opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 touch:opacity-100 touch:translate-y-0">
+          <div className="bg-white shadow-md rounded-md flex items-center overflow-hidden">
             <button
-              onClick={handleAddToCart}
-              disabled={isAddingToCart || !inStock}
-              className={`flex items-center justify-center gap-2 bg-brand-green text-white px-4 py-2 rounded-md transition-colors ${
-                isAddingToCart ? "opacity-50 cursor-not-allowed" : "hover:bg-brand-green-dark"
-              }`}
+              onClick={decreaseQuantity}
+              className="p-2 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              aria-label="Decrease quantity"
             >
-              <ShoppingBag size={16} />
-              <span>{isAddingToCart ? "Adding..." : "Add to Cart"}</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14"></path>
+              </svg>
+            </button>
+            <span className="px-3 min-w-[24px] text-center">{quantity}</span>
+            <button
+              onClick={increaseQuantity}
+              className="p-2 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              aria-label="Increase quantity"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 5v14"></path>
+                <path d="M5 12h14"></path>
+              </svg>
             </button>
           </div>
-        )}
+          <button
+            onClick={handleAddToCart}
+            className={`bg-brand-green text-white p-3 rounded-full transition-all ${isAddingToCart ? "scale-95 bg-brand-darkGreen" : "hover:bg-brand-lightGreen active:scale-95"}`}
+            aria-label="Add to cart"
+          >
+            <ShoppingBag size={18} />
+          </button>
+        </div>
 
         {/* Category icon for HoReCa products */}
         {renderCategoryIcon()}
       </Link>
 
       {/* Product info */}
-      <div className="mt-3">
-        <h3 className="text-sm font-medium line-clamp-2">{name}</h3>
+      <div className="mt-3 md:mt-4 text-center">
+        <Link to={`/products/${handle}`} className="block">
+          <h3 className="text-sm font-medium hover:text-brand-green transition-colors line-clamp-2">{name}</h3>
+        </Link>
+        {description && (
+          <p className="text-xs text-gray-600 mt-1 line-clamp-2 overflow-hidden text-ellipsis">{description}</p>
+        )}
         {itemNo && <p className="text-xs text-gray-500 mt-1">Item no. {itemNo}</p>}
-        {diameter && <p className="text-xs text-gray-500">Ø {diameter}</p>}
+        {diameter && <p className="text-xs text-gray-500 mt-1">Ø {diameter}</p>}
         <div className="mt-1">
           {isSale && salePrice ? (
-            <div className="flex items-center gap-2">
-              <span className="text-[#E53935] font-medium">{formatPrice(salePrice)}</span>
-              <span className="text-gray-400 line-through text-xs">{formatPrice(price)}</span>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-[#E53935] font-medium">
+                {salePrice} {currency}
+              </span>
+              <span className="text-gray-400 line-through">
+                {price} {currency}
+              </span>
             </div>
           ) : (
-            <span className="font-medium">{formatPrice(price)}</span>
+            <span className="text-gray-800">
+              {price} {currency}
+            </span>
           )}
         </div>
+        {inStock && <p className="text-xs text-brand-green mt-2">In stock ({inStock})</p>}
+        {deliveryTime && <p className="text-xs text-gray-500">Delivery: {deliveryTime}</p>}
       </div>
     </div>
   )

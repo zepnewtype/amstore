@@ -9,90 +9,27 @@
 //   readonly env: ImportMetaEnv;
 // }
 
-import { SHOPIFY_STORE_URL, SHOPIFY_STOREFRONT_ACCESS_TOKEN } from '@/lib/constants';
-import type { ShopifyProduct, ShopifyCollection } from './types';
+const SHOPIFY_ENDPOINT = 'https://8344ca-27.myshopify.com/api/2023-07/graphql.json';
+const SHOPIFY_TOKEN = '0d4ec0486f9d96fb58c0e41d2a50a1f5';
 
-interface ShopifyFetchOptions {
-  query: string;
-  variables?: Record<string, any>;
-  cache?: RequestCache;
-}
-
-export async function shopifyFetch<T>({
-  query,
-  variables = {},
-  cache = 'force-cache',
-}: ShopifyFetchOptions): Promise<T> {
-  try {
-    const response = await fetch(`${SHOPIFY_STORE_URL}/api/2024-01/graphql.json`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_ACCESS_TOKEN,
-      },
-      body: JSON.stringify({
-        query,
-        variables,
-      }),
-      cache,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const { data, errors } = await response.json();
-
-    if (errors) {
-      console.error('GraphQL Errors:', errors);
-      throw new Error(errors[0]?.message || 'GraphQL error occurred');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Shopify API Error:', error);
-    throw error;
+export async function shopifyFetch(query: string, variables: any = {}) {
+  // Логируем тип запроса и параметры
+  let queryName = '';
+  const match = query.match(/\b(query|mutation)\s*(\w+)?/);
+  if (match) {
+    queryName = match[2] || '[anonymous]';
   }
-}
+  console.log('[Shopify API] Импортирован запрос:', queryName, '| variables:', variables);
 
-export function transformProductForFrontend(product: ShopifyProduct): ShopifyProduct {
-  if (!product) return null;
-
-  const mainVariant = product.variants.edges[0]?.node || {};
-  const price = mainVariant.price?.amount ? Number.parseFloat(mainVariant.price.amount) : 0;
-  const compareAtPrice = mainVariant.compareAtPrice?.amount ? Number.parseFloat(mainVariant.compareAtPrice.amount) : 0;
-
-  return {
-    ...product,
-    variants: {
-      edges: product.variants.edges.map(edge => ({
-        node: {
-          ...edge.node,
-          price: {
-            ...edge.node.price,
-            amount: Number.parseFloat(edge.node.price.amount).toString(),
-          },
-          compareAtPrice: edge.node.compareAtPrice ? {
-            ...edge.node.compareAtPrice,
-            amount: Number.parseFloat(edge.node.compareAtPrice.amount).toString(),
-          } : null,
-        },
-      })),
+  const res = await fetch(SHOPIFY_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Storefront-Access-Token': SHOPIFY_TOKEN,
     },
-  };
-}
-
-export function transformCollectionForFrontend(collection: ShopifyCollection): ShopifyCollection {
-  if (!collection) return null;
-
-  return {
-    ...collection,
-    products: {
-      edges: collection.products.edges.map(edge => ({
-        node: {
-          ...edge.node,
-        },
-      })),
-    },
-  };
-}
+    body: JSON.stringify({ query, variables }),
+  });
+  const json = await res.json();
+  if (json.errors) throw new Error(JSON.stringify(json.errors));
+  return json.data;
+} 

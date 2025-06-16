@@ -1,59 +1,70 @@
-import { Link } from "react-router-dom"
-import ProductCard from "./ProductCard"
-import { ImageOff } from "lucide-react"
+import { Link } from 'react-router-dom';
+import ProductCard from './ProductCard';
+import { useCart } from './Cart';
+import { ImageOff } from 'lucide-react';
 
 interface Product {
-  id: string
-  name: string
-  price: number
-  image: string | null
-  hoverImage?: string
-  isNew?: boolean
-  isSale?: boolean
-  salePrice?: number
-  itemNo?: string
-  diameter?: string
-  inStock?: boolean
-  currency?: string
-  description?: string
-  handle?: string
-  productType?: string
-  vendor?: string
-  tags?: string[]
+  id: number;
+  name: string;
+  price: number;
+  image: string | null;
+  hoverImage?: string;
+  isNew?: boolean;
+  isSale?: boolean;
+  salePrice?: number;
+  itemNo?: string;
+  diameter?: string;
+  inStock?: number;
+  deliveryTime?: string;
+  description?: string;
+  handle?: string;
 }
 
 interface ProductGridProps {
-  products: Product[]
-  title?: string
-  subtitle?: string
-  columns?: 2 | 3 | 4
-  layout?: "grid" | "list" | "scroll"
+  products: Product[];
+  title?: string;
+  subtitle?: string;
+  columns?: 2 | 3 | 4;
+  layout?: 'grid' | 'list' | 'scroll';
+  isLoading?: boolean;
 }
 
-const ProductGrid = ({ products, title, subtitle, columns = 4, layout = "grid" }: ProductGridProps) => {
+const ProductGrid = ({ 
+  products,
+  title,
+  subtitle,
+  columns = 4,
+  layout = 'grid',
+  isLoading = false
+}: ProductGridProps) => {
   const getGridClass = () => {
     switch (columns) {
       case 2:
-        return "grid-cols-1 sm:grid-cols-2"
+        return "grid-cols-1 sm:grid-cols-2";
       case 3:
-        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
       case 4:
       default:
-        return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+        return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
     }
+  };
+
+  if (isLoading) {
+    return (
+      <div className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-${columns} gap-4 md:gap-6`}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="bg-white rounded-lg shadow p-4 animate-pulse">
+            <div className="h-40 bg-gray-200 rounded mb-4 shimmer" />
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 shimmer" />
+            <div className="h-4 bg-gray-100 rounded w-1/2 shimmer" />
+            <div className="h-8 bg-gray-100 rounded mt-4 shimmer" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
-  const formatPrice = (price: number, currency: string = "AED") => {
-    return new Intl.NumberFormat('en-AE', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price)
-  }
-
-  // Горизонтальная прокрутка для мобильных устройств
-  if (layout === "scroll") {
+  if (layout === 'scroll') {
     return (
       <section className="py-8 md:py-16">
         <div className="container-custom">
@@ -71,46 +82,28 @@ const ProductGrid = ({ products, title, subtitle, columns = 4, layout = "grid" }
               {products.map((product) => (
                 <div key={product.id} className="flex-shrink-0 w-[70vw] max-w-[260px] snap-start">
                   <Link to={`/products/${product.handle || product.id}`} className="block">
-                    <div className="aspect-square w-full bg-gray-50 mb-3 relative group">
+                    <div className="aspect-square w-full bg-gray-50 mb-3">
                       {product.image ? (
-                        <>
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-contain transition-opacity duration-300 group-hover:opacity-0"
-                          />
-                          {product.hoverImage && (
-                            <img
-                              src={product.hoverImage}
-                              alt={product.name}
-                              className="w-full h-full object-contain absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                            />
-                          )}
-                        </>
+                        <img
+                          src={product.image || "/placeholder.svg"}
+                          alt={product.name}
+                          className="w-full h-full object-contain"
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <ImageOff className="text-gray-400" size={32} />
                         </div>
-                      )}
-                      {product.isNew && (
-                        <span className="absolute top-2 left-2 bg-brand-green text-white text-xs px-2 py-1 rounded">
-                          New
-                        </span>
                       )}
                     </div>
                     <h3 className="text-sm font-medium line-clamp-2">{product.name}</h3>
                     <div className="mt-1">
                       {product.isSale && product.salePrice ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-[#E53935] font-medium">
-                            {formatPrice(product.salePrice, product.currency)}
-                          </span>
-                          <span className="text-gray-400 line-through text-xs">
-                            {formatPrice(product.price, product.currency)}
-                          </span>
+                          <span className="text-[#E53935] font-medium">{product.salePrice} AED</span>
+                          <span className="text-gray-400 line-through text-xs">{product.price} AED</span>
                         </div>
                       ) : (
-                        <span className="font-medium">{formatPrice(product.price, product.currency)}</span>
+                        <span className="font-medium">{product.price} AED</span>
                       )}
                     </div>
                   </Link>
@@ -120,10 +113,10 @@ const ProductGrid = ({ products, title, subtitle, columns = 4, layout = "grid" }
           </div>
         </div>
       </section>
-    )
+    );
   }
 
-  if (layout === "list") {
+  if (layout === 'list') {
     return (
       <section className="py-6 md:py-8">
         <div className="container-custom">
@@ -158,11 +151,11 @@ const ProductGrid = ({ products, title, subtitle, columns = 4, layout = "grid" }
                   <div className="flex items-center my-2">
                     {product.isSale && product.salePrice ? (
                       <>
-                        <span className="text-[#E53935] font-medium mr-2">{formatPrice(product.salePrice, product.currency)}</span>
-                        <span className="text-gray-400 line-through">{formatPrice(product.price, product.currency)}</span>
+                        <span className="text-[#E53935] font-medium mr-2">{product.salePrice} AED</span>
+                        <span className="text-gray-400 line-through">{product.price} AED</span>
                       </>
                     ) : (
-                      <span className="font-medium">{formatPrice(product.price, product.currency)}</span>
+                      <span className="font-medium">{product.price} AED</span>
                     )}
                   </div>
                 </div>
@@ -171,7 +164,7 @@ const ProductGrid = ({ products, title, subtitle, columns = 4, layout = "grid" }
           </div>
         </div>
       </section>
-    )
+    );
   }
 
   return (
@@ -184,21 +177,21 @@ const ProductGrid = ({ products, title, subtitle, columns = 4, layout = "grid" }
             {title && <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif">{title}</h2>}
           </div>
         )}
-
+        
         {/* Product grid */}
         <div className={`grid ${getGridClass()} gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10`}>
           {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              {...product}
-              image={product.image || ""}
+            <ProductCard 
+              key={product.id} 
+              {...product} 
+              image={product.image || ''} 
               handle={product.handle || String(product.id)}
             />
           ))}
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default ProductGrid
+export default ProductGrid;

@@ -1,68 +1,108 @@
-"use client"
 
-import { useState } from "react"
-import { ShoppingBag, Heart } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Check, Heart, Share2 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductActionsProps {
-  onAddToCart: () => void
-  price: number
-  quantity: number
-  productName: string
-  isAddingToCart?: boolean
+  onAddToCart: () => void;
+  price: number;
+  quantity: number;
+  productName: string;
+  currency?: string;
+  isAddingToCart: boolean;
 }
 
-const ProductActions = ({ onAddToCart, price, quantity, productName, isAddingToCart = false }: ProductActionsProps) => {
-  const [isWishlist, setIsWishlist] = useState(false)
-  const [isAdded, setIsAdded] = useState(false)
+const ProductActions = ({ 
+  onAddToCart, 
+  price, 
+  quantity, 
+  productName,
+  currency = "AED",
+  isAddingToCart
+}: ProductActionsProps) => {
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { toast } = useToast();
 
-  const handleAddToCart = () => {
-    onAddToCart()
-    setIsAdded(true)
-    setTimeout(() => setIsAdded(false), 2000)
-  }
-
-  const handleWishlist = () => {
-    setIsWishlist(!isWishlist)
-  }
-
-  const totalPrice = price * quantity
+  const handleToggleWishlist = () => {
+    setIsWishlisted(!isWishlisted);
+    toast({
+      title: isWishlisted ? "Removed from wishlist" : "Added to wishlist",
+      description: isWishlisted ? `${productName} removed from your wishlist` : `${productName} added to your wishlist`,
+      duration: 3000,
+    });
+  };
 
   return (
-    <div className="mt-6 space-y-4">
-      {/* Total price */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500">Total:</span>
-        <span className="text-xl font-medium">{totalPrice.toFixed(2)} AED</span>
-      </div>
-
-      {/* Action buttons */}
-      <div className="flex gap-3">
-        <Button
-          onClick={handleAddToCart}
-          className={`w-full py-6 bg-brand-green hover:bg-brand-lightGreen text-white transition-all duration-300 ${
-            isAddingToCart || isAdded ? "scale-95 bg-brand-darkGreen" : ""
-          }`}
-          disabled={isAddingToCart || isAdded}
+    <motion.div 
+      className="flex flex-col gap-4 mb-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 }}
+    >
+      <motion.button 
+        className="relative w-full h-12 bg-brand-green text-white uppercase text-sm tracking-wider hover:bg-brand-lightGreen transition-colors rounded-sm overflow-hidden"
+        onClick={onAddToCart}
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.98 }}
+        disabled={isAddingToCart}
+      >
+        <motion.div 
+          className="absolute inset-0 flex items-center justify-center"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: isAddingToCart ? 0 : 1 }}
         >
-          <ShoppingBag className="mr-2 h-5 w-5" />
-          {isAdded ? "Added to Cart ✓" : "Add to Cart"}
-        </Button>
-
-        <Button
-          onClick={handleWishlist}
-          variant="outline"
-          className="min-w-[56px] py-6 border-gray-300 hover:bg-gray-50 hover:text-brand-green transition-colors"
-          aria-label={isWishlist ? "Remove from wishlist" : "Add to wishlist"}
+          Add to bag — {price * quantity} {currency}
+        </motion.div>
+        
+        <motion.div 
+          className="absolute inset-0 flex items-center justify-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ 
+            opacity: isAddingToCart ? 1 : 0,
+            y: isAddingToCart ? 0 : 20
+          }}
         >
-          <Heart className={`h-5 w-5 ${isWishlist ? "fill-[#E53935] text-[#E53935]" : ""}`} />
-        </Button>
+          <Check className="mr-2" size={18} /> Added to bag
+        </motion.div>
+      </motion.button>
+      
+      <div className="flex gap-4">
+        <motion.button 
+          className={`flex-1 h-11 border ${isWishlisted ? 'bg-pink-50 border-pink-200' : 'border-gray-300'} flex items-center justify-center gap-2 text-sm hover:bg-gray-50 transition-colors rounded-sm`}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleToggleWishlist}
+        >
+          <Heart size={16} className={isWishlisted ? 'fill-pink-500 text-pink-500' : ''} />
+          <span>{isWishlisted ? 'Added to wishlist' : 'Add to wishlist'}</span>
+        </motion.button>
+        <motion.button 
+          className="flex-1 h-11 border border-gray-300 flex items-center justify-center gap-2 text-sm hover:bg-gray-50 transition-colors rounded-sm"
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Share2 size={16} />
+          <span>Share</span>
+        </motion.button>
       </div>
+      
+      {/* Sharing options */}
+      <motion.div 
+        className="flex gap-4 mb-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+      >
+        <button className="text-sm text-gray-600 hover:text-brand-green transition-colors">
+          WhatsApp
+        </button>
+        <button className="text-sm text-gray-600 hover:text-brand-green transition-colors">
+          Email
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+};
 
-      {/* Delivery info */}
-      <p className="text-sm text-gray-500 text-center mt-4">Free delivery for orders over 500 AED</p>
-    </div>
-  )
-}
-
-export default ProductActions
+export default ProductActions;

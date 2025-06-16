@@ -1,55 +1,49 @@
-"use client"
+import { motion } from 'framer-motion';
 
 interface ColorOption {
-  color: string
-  image?: string
+  color: string;
+  image: string;
 }
 
 interface ProductColorSelectorProps {
-  colorOptions: ColorOption[]
-  selectedColor: string
-  onColorChange: (color: string, image?: string) => void
+  colorOptions: ColorOption[];
+  selectedColor: string;
+  onColorChange?: (color: string, image: string) => void;
 }
 
-const ProductColorSelector = ({ colorOptions, selectedColor, onColorChange }: ProductColorSelectorProps) => {
-  if (!colorOptions || colorOptions.length === 0) return null
-
+const ProductColorSelector = ({ 
+  colorOptions, 
+  selectedColor, 
+  onColorChange
+}: ProductColorSelectorProps) => {
   return (
-    <div className="mt-6">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Color: <span className="font-normal">{selectedColor}</span>
-      </label>
-      <div className="flex flex-wrap gap-3">
-        {colorOptions.map((option, index) => (
-          <button
-            key={index}
-            type="button"
-            onClick={() => onColorChange(option.color, option.image)}
-            className={`relative w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border-2 transition-all ${
-              selectedColor === option.color
-                ? "border-brand-green ring-2 ring-brand-green/30"
-                : "border-gray-200 hover:border-gray-300"
-            }`}
-            aria-label={`Select color ${option.color}`}
-            title={option.color}
+    <motion.div 
+      className="mb-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+    >
+      <h3 className="text-sm font-medium mb-3">Color: <span className="text-brand-green">{selectedColor}</span></h3>
+      <div className="flex gap-3">
+        {colorOptions.map(opt => (
+          <motion.button
+            key={opt.color}
+            onClick={() => onColorChange && onColorChange(opt.color, opt.image)}
+            className={`w-12 h-12 rounded-full flex items-center justify-center border ${selectedColor === opt.color ? 'ring-2 ring-offset-2 ring-brand-green border-brand-green' : 'border-gray-200'}`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {option.image ? (
-              <img src={option.image || "/placeholder.svg"} alt={option.color} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full" style={{ backgroundColor: option.color.toLowerCase() }} />
-            )}
-
-            {/* Индикатор выбранного цвета */}
-            {selectedColor === option.color && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                <div className="w-3 h-3 bg-white rounded-full"></div>
-              </div>
-            )}
-          </button>
+            <img
+              src={opt.image}
+              alt={opt.color}
+              className="w-10 h-10 rounded-full object-cover"
+              aria-label={`Select ${opt.color} color`}
+            />
+          </motion.button>
         ))}
       </div>
-    </div>
-  )
-}
+    </motion.div>
+  );
+};
 
-export default ProductColorSelector
+export default ProductColorSelector;
