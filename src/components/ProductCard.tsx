@@ -206,12 +206,12 @@ const ProductCard = ({
           {isSale && <span className="bg-[#E53935] text-white text-xs py-1 px-2 uppercase tracking-wide">Sale</span>}
         </div>
 
-        {/* Quick add to cart with quantity selector - улучшенная версия для мобильных */}
+        {/* Quick add to cart with quantity selector - ИСПРАВЛЕННАЯ версия */}
         <div className="absolute bottom-2 right-2 flex flex-col gap-2 opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 touch:opacity-100 touch:translate-y-0">
-          <div className="bg-white shadow-md rounded-md flex items-center overflow-hidden">
+          <div className="bg-white border border-gray-200 flex items-center overflow-hidden" style={{ borderRadius: '2px' }}>
             <button
               onClick={decreaseQuantity}
-              className="p-2 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
               aria-label="Decrease quantity"
             >
               <svg
@@ -228,10 +228,10 @@ const ProductCard = ({
                 <path d="M5 12h14"></path>
               </svg>
             </button>
-            <span className="px-3 min-w-[24px] text-center">{quantity}</span>
+            <span className="w-8 h-8 flex items-center justify-center text-center text-sm">{quantity}</span>
             <button
               onClick={increaseQuantity}
-              className="p-2 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
               aria-label="Increase quantity"
             >
               <svg
@@ -252,7 +252,8 @@ const ProductCard = ({
           </div>
           <button
             onClick={handleAddToCart}
-            className={`bg-brand-green text-white px-4 py-2 rounded-full transition-all flex items-center gap-2 text-sm font-medium ${isAddingToCart ? "scale-95 bg-brand-darkGreen" : "hover:bg-brand-lightGreen active:scale-95"}`}
+            className={`bg-brand-green text-white px-4 py-2 transition-all flex items-center gap-2 text-sm font-medium ${isAddingToCart ? "scale-95 bg-brand-darkGreen" : "hover:bg-brand-lightGreen active:scale-95"}`}
+            style={{ borderRadius: '2px' }}
             aria-label="Add to cart"
           >
             <ShoppingBag size={16} />

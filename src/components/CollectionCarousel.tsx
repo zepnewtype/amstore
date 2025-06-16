@@ -57,23 +57,21 @@ const CollectionCarousel = ({ collections }: CollectionCarouselProps) => {
   
   return (
     <div className="py-8">
-      {/* Grid of visible collections */}
+      {/* Grid of visible collections - УБРАНЫ ЭФФЕКТЫ */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {visibleCollections.map((collection, index) => (
           <div 
             key={`${collection.id}-${currentIndex}-${index}`}
-            className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+            className="group cursor-pointer"
           >
-            <div className="relative overflow-hidden">
-              {/* Square image container */}
-              <div className="aspect-square relative overflow-hidden rounded-lg shadow-lg">
+            <div className="relative">
+              {/* Square image container - БЕЗ ТЕНИ И ЭФФЕКТОВ */}
+              <div className="aspect-square relative overflow-hidden">
                 <img 
                   src={collection.image} 
                   alt={collection.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-full object-cover"
                 />
-                {/* Overlay on hover */}
-                <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               
               {/* Content below image */}
@@ -84,7 +82,8 @@ const CollectionCarousel = ({ collections }: CollectionCarouselProps) => {
                 
                 <Link 
                   to={collection.link}
-                  className="inline-block bg-brand-green text-white px-6 py-2 rounded hover:bg-brand-lightGreen transition-colors duration-200 text-sm uppercase tracking-wide"
+                  className="inline-block bg-brand-green text-white px-6 py-2 hover:bg-brand-lightGreen transition-colors duration-200 text-sm uppercase tracking-wide"
+                  style={{ borderRadius: '2px' }}
                 >
                   View Collection
                 </Link>

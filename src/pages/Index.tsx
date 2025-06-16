@@ -124,12 +124,23 @@ const Index = () => {
     <Layout>
       <Hero />
       
-      {/* Featured products section - MOVED UP */}
-      <ProductGrid 
-        products={featuredProducts} 
-        title="Featured Products" 
-        subtitle="Handpicked Selection"
-      />
+      {/* Featured products section - MOVED UP - УВЕЛИЧЕННЫЕ КАРТОЧКИ */}
+      <section className="py-8 md:py-16">
+        <div className="container-full">
+          <div className="text-center mb-6 md:mb-12">
+            <p className="uppercase tracking-wider text-sm text-brand-green mb-1 md:mb-2">Handpicked Selection</p>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif">Featured Products</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {featuredProducts.map(product => (
+              <div key={product.id} className="w-full">
+                <ProductCard {...product} handle={`product-${product.id}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       
       {/* Collection Carousel - MOVED DOWN - FULL WIDTH */}
       <section className="py-12">
@@ -204,16 +215,16 @@ const Index = () => {
       </motion.section>
       
       {/* B2B Products Section - FULL WIDTH */}
-      <section className="py-16">
+      <section className="py-16 relative">
         <div className="container-full">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif mb-3">B2B Solutions</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif mb-4 text-gray-900">B2B Solutions</h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
               Professional-grade tableware designed for hotels, restaurants, beach clubs and yachts
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-12">
             {horecaProducts.map(product => (
               <div key={product.id} className="w-full">
                 <ProductCard {...product} handle={`product-${product.id}`} />
@@ -224,7 +235,8 @@ const Index = () => {
           <div className="text-center">
             <Link 
               to="/business" 
-              className="inline-block bg-brand-green text-white px-8 py-3 hover:bg-brand-lightGreen transition-colors"
+              className="inline-block bg-brand-green text-white px-8 py-3 hover:bg-brand-lightGreen transition-colors text-sm uppercase tracking-wide"
+              style={{ borderRadius: '2px' }}
             >
               View All Business Solutions
             </Link>
