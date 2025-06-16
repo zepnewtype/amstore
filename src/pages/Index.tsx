@@ -6,6 +6,7 @@ import CollectionCarousel from '../components/CollectionCarousel';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 const featuredProducts = [
   {
@@ -122,7 +123,15 @@ const Index = () => {
   return (
     <Layout>
       <Hero />
-      {/* Collection Carousel */}
+      
+      {/* Featured products section - MOVED UP */}
+      <ProductGrid 
+        products={featuredProducts} 
+        title="Featured Products" 
+        subtitle="Handpicked Selection"
+      />
+      
+      {/* Collection Carousel - MOVED DOWN */}
       <section className="py-12">
         <div className="container-custom">
           <div className="text-center mb-6">
@@ -149,13 +158,6 @@ const Index = () => {
           <CollectionCarousel collections={collections} />
         </div>
       </section>
-      
-      {/* Featured products section */}
-      <ProductGrid 
-        products={featuredProducts} 
-        title="Featured Products" 
-        subtitle="Handpicked Selection"
-      />
       
       {/* About Us section */}
       <motion.section 
@@ -200,7 +202,6 @@ const Index = () => {
           </div>
         </div>
       </motion.section>
-      
       
       {/* HoReCa Products Section */}
       <section className="py-16">

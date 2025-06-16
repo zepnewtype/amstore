@@ -1,7 +1,6 @@
-
 import ProductCard from './ProductCard';
 
-interface Product {
+interface RelatedProduct {
   id: number;
   name: string;
   price: number;
@@ -16,32 +15,42 @@ interface Product {
 }
 
 interface RelatedProductsProps {
-  title: string;
-  subtitle?: string;
-  products: Product[];
+  products: RelatedProduct[];
+  currentProductId?: number;
 }
 
-const RelatedProducts = ({ title, subtitle, products }: RelatedProductsProps) => {
+const RelatedProducts = ({ products, currentProductId }: RelatedProductsProps) => {
+  // Filter out current product if provided
+  const filteredProducts = currentProductId 
+    ? products.filter(product => product.id !== currentProductId)
+    : products;
+
+  // Show only first 4 products
+  const displayProducts = filteredProducts.slice(0, 4);
+
+  if (displayProducts.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="mt-16">
-      <div className="relative mb-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200"></div>
+    <section className="py-16">
+      <div className="container-custom">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-serif">You Might Also Like</h2>
+          <p className="text-gray-600 mt-2">Discover more exceptional pieces from our collection</p>
         </div>
-        <div className="relative flex justify-center text-center">
-          <div className="bg-white px-6">
-            {subtitle && <p className="uppercase tracking-wider text-xs text-brand-green mb-1">{subtitle}</p>}
-            <h2 className="text-xl font-serif">{title}</h2>
-          </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {displayProducts.map((product) => (
+            <ProductCard 
+              key={product.id} 
+              {...product} 
+              handle={`product-${product.id}`}
+            />
+          ))}
         </div>
       </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {products.map((product) => (
-          <ProductCard key={product.id} {...product} />
-        ))}
-      </div>
-    </div>
+    </section>
   );
 };
 

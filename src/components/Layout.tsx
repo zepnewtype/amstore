@@ -1,20 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Search, User, Phone, Truck, ChevronDown } from 'lucide-react';
 import Footer from './Footer';
 import Cart from './Cart';
 import CartIcon from './CartIcon';
 import { useToast } from "@/hooks/use-toast";
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-  NavigationMenuLink
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
-import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel"
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,17 +17,15 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // Более простой и эффективный scroll handler без throttling - он сам браузером оптимизирован
-  const handleScroll = useCallback(() => {
-    const scrollY = window.scrollY;
-    setIsScrolled(scrollY > 50);
-  }, []);
-
+  // УПРОЩЕННЫЙ scroll handler - только для фиксации меню
   useEffect(() => {
-    // Passive listeners для лучшей производительности
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20); // Фиксируем меню при малом скролле
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+  }, []);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -45,7 +33,7 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <>
-      {/* Announcement Bar - упрощенная версия без анимаций */}
+      {/* Announcement Bar */}
       <div className="bg-brand-green text-white py-2 md:py-4 px-4 text-xs md:text-sm">
         <div className="container-custom flex flex-col md:flex-row justify-between items-center gap-1 md:gap-0">
           <div className="block md:hidden w-full text-center">
@@ -67,24 +55,24 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       </div>
 
-      {/* Фиксированный header */}
-      <header className={`sticky top-0 left-0 right-0 z-40 bg-white border-b transition-shadow duration-200 ${isScrolled ? 'shadow-sm' : ''}`}>
-        <div className="container-custom flex flex-col items-center">
-          {/* Лого - показываем только когда НЕ скроллим */}
-          {!isScrolled && (
-            <div className="flex justify-center py-6">
-              <Link to="/" className="flex items-center">
-                <img 
-                  src="https://cdn.shopify.com/s/files/1/0592/5152/3702/files/AMP_LOGO_FULL.svg?v=1735227680" 
-                  alt="Amprio Milano" 
-                  className="h-20 md:h-28" 
-                />
-              </Link>
-            </div>
-          )}
+      {/* УПРОЩЕННАЯ структура меню */}
+      {/* Лого - всегда показан */}
+      <div className="bg-white">
+        <div className="container-custom flex justify-center py-6">
+          <Link to="/" className="flex items-center">
+            <img 
+              src="https://cdn.shopify.com/s/files/1/0592/5152/3702/files/AMP_LOGO_FULL.svg?v=1735227680" 
+              alt="Amprio Milano" 
+              className="h-20 md:h-28" 
+            />
+          </Link>
+        </div>
+      </div>
 
-          {/* Навигация - всегда видна */}
-          <div className={`w-full transition-all duration-300 ${isScrolled ? 'py-4' : 'py-3'}`}>
+      {/* Навигация - становится фиксированной при скролле */}
+      <header className={`bg-white border-b transition-all duration-200 ${isScrolled ? 'fixed top-0 left-0 right-0 z-50 shadow-md' : 'relative'}`}>
+        <div className="container-custom">
+          <div className="w-full py-4">
             <div className="w-full flex items-center justify-between">
               {/* Mobile menu button */}
               <button 
@@ -119,7 +107,7 @@ const Layout = ({ children }: LayoutProps) => {
                     </Link>
                   </li>
                   
-                  {/* Collections Dropdown с картинкой */}
+                  {/* Collections Dropdown - РАСШИРЕННАЯ картинка */}
                   <li className="relative group">
                     <button 
                       className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green flex items-center ${
@@ -130,53 +118,52 @@ const Layout = ({ children }: LayoutProps) => {
                       <ChevronDown size={12} className="ml-1" />
                     </button>
                     
-                    {/* Dropdown Menu с картинкой и затемнением */}
-                    <div className="absolute top-full left-0 mt-2 w-96 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    {/* РАСШИРЕННЫЙ Dropdown */}
+                    <div 
+                      className="absolute top-full left-0 mt-2 w-[500px] bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+                      style={{
+                        willChange: 'opacity, visibility',
+                        backfaceVisibility: 'hidden'
+                      }}
+                    >
                       <div className="flex">
-                        {/* Левая часть - картинка с затемнением */}
-                        <div className="w-1/3 relative">
+                        {/* РАСШИРЕННАЯ картинка */}
+                        <div className="w-2/5 relative">
                           <div 
-                            className="h-full bg-cover bg-center rounded-l-md relative"
+                            className="h-full bg-cover bg-center rounded-l-md relative min-h-[200px]"
                             style={{
-                              backgroundImage: `url('https://ampriomilano.com/cdn/shop/files/MAMMA_MIA_table_2000x.jpg?v=1743609613')`
+                              backgroundImage: `url('https://ampriomilano.com/cdn/shop/files/MAMMA_MIA_table_2000x.jpg?v=1743609613')`,
+                              willChange: 'transform'
                             }}
                           >
                             {/* Затемнение */}
-                            <div className="absolute inset-0 bg-black bg-opacity-30 rounded-l-md"></div>
+                            <div className="absolute inset-0 bg-black bg-opacity-40 rounded-l-md"></div>
+                            {/* ЗАГОЛОВОК на картинке */}
+                            <div className="absolute inset-0 flex items-end p-4">
+                              <h3 className="text-white font-serif text-lg">Collections</h3>
+                            </div>
                           </div>
                         </div>
                         
-                        {/* Правая часть - меню */}
-                        <div className="w-2/3 p-4">
+                        {/* Меню справа */}
+                        <div className="w-3/5 p-4">
                           <div className="space-y-3">
-                            <Link
-                              to="/collections"
-                              className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
-                            >
+                            <Link to="/collections" className="block p-2 rounded-md hover:bg-gray-50 transition-colors">
                               <div className="text-sm font-medium text-black mb-1">All Collections</div>
                               <p className="text-xs text-gray-600">Browse all our curated collections</p>
                             </Link>
                             
-                            <Link
-                              to="/collection/tableware"
-                              className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
-                            >
+                            <Link to="/collection/tableware" className="block p-2 rounded-md hover:bg-gray-50 transition-colors">
                               <div className="text-sm font-medium">Tableware</div>
                               <p className="text-xs text-gray-600">Elegant dining solutions</p>
                             </Link>
                             
-                            <Link
-                              to="/collection/outdoor"
-                              className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
-                            >
+                            <Link to="/collection/outdoor" className="block p-2 rounded-md hover:bg-gray-50 transition-colors">
                               <div className="text-sm font-medium">Outdoor</div>
                               <p className="text-xs text-gray-600">Outdoor entertaining</p>
                             </Link>
                             
-                            <Link
-                              to="/collection/home-decor"
-                              className="block p-2 rounded-md hover:bg-gray-50 transition-colors"
-                            >
+                            <Link to="/collection/home-decor" className="block p-2 rounded-md hover:bg-gray-50 transition-colors">
                               <div className="text-sm font-medium">Home Decor</div>
                               <p className="text-xs text-gray-600">Decorative accessories</p>
                             </Link>
@@ -186,7 +173,7 @@ const Layout = ({ children }: LayoutProps) => {
                     </div>
                   </li>
 
-                  {/* Business Dropdown с картинкой */}
+                  {/* Business Dropdown - РАСШИРЕННАЯ картинка */}
                   <li className="relative group">
                     <button 
                       className={`uppercase text-xs tracking-wide font-medium transition-colors duration-200 hover:text-brand-green flex items-center ${
@@ -197,29 +184,36 @@ const Layout = ({ children }: LayoutProps) => {
                       <ChevronDown size={12} className="ml-1" />
                     </button>
                     
-                    <div className="absolute top-full left-0 mt-2 w-96 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div 
+                      className="absolute top-full left-0 mt-2 w-[520px] bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+                      style={{
+                        willChange: 'opacity, visibility',
+                        backfaceVisibility: 'hidden'
+                      }}
+                    >
                       <div className="flex">
-                        {/* Левая часть - картинка с затемнением */}
-                        <div className="w-1/3 relative">
+                        {/* РАСШИРЕННАЯ картинка */}
+                        <div className="w-2/5 relative">
                           <div 
-                            className="h-full bg-cover bg-center rounded-l-md relative"
+                            className="h-full bg-cover bg-center rounded-l-md relative min-h-[280px]"
                             style={{
-                              backgroundImage: `url('https://ampriomilano.com/cdn/shop/files/MAMMA_MIA_table_2000x.jpg?v=1743609613')`
+                              backgroundImage: `url('https://ampriomilano.com/cdn/shop/files/MAMMA_MIA_table_2000x.jpg?v=1743609613')`,
+                              willChange: 'transform'
                             }}
                           >
-                            <div className="absolute inset-0 bg-black bg-opacity-30 rounded-l-md"></div>
+                            <div className="absolute inset-0 bg-black bg-opacity-40 rounded-l-md"></div>
+                            {/* ЗАГОЛОВОК на картинке */}
+                            <div className="absolute inset-0 flex items-end p-4">
+                              <h3 className="text-white font-serif text-lg">HoReCa Solutions</h3>
+                            </div>
                           </div>
                         </div>
                         
-                        {/* Правая часть - меню */}
-                        <div className="w-2/3 p-4">
-                          <div className="mb-3">
-                            <div className="text-sm font-medium text-black mb-2">HoReCa Solutions</div>
-                          </div>
-                          
+                        {/* Меню справа */}
+                        <div className="w-3/5 p-4">
                           <div className="space-y-2">
                             <Link to="/business/restaurants" className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors">
-                              <svg className="w-4 h-4 mr-2 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
+                              <svg className="w-4 h-4 mr-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
                               </svg>
                               <div>
@@ -229,7 +223,7 @@ const Layout = ({ children }: LayoutProps) => {
                             </Link>
                             
                             <Link to="/business/hotels" className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors">
-                              <svg className="w-4 h-4 mr-2 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
+                              <svg className="w-4 h-4 mr-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
                               </svg>
                               <div>
@@ -239,7 +233,7 @@ const Layout = ({ children }: LayoutProps) => {
                             </Link>
                             
                             <Link to="/business/beach-clubs" className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors">
-                              <svg className="w-4 h-4 mr-2 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
+                              <svg className="w-4 h-4 mr-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd"/>
                               </svg>
                               <div>
@@ -249,7 +243,7 @@ const Layout = ({ children }: LayoutProps) => {
                             </Link>
                             
                             <Link to="/business/yachts" className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors">
-                              <svg className="w-4 h-4 mr-2 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
+                              <svg className="w-4 h-4 mr-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                               </svg>
                               <div>
@@ -329,6 +323,9 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         )}
       </header>
+
+      {/* Отступ сверху когда меню фиксированное */}
+      {isScrolled && <div className="h-16"></div>}
 
       {/* Main content */}
       <main className="min-h-screen">

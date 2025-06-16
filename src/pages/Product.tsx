@@ -270,14 +270,12 @@ const Product = () => {
         {/* Related Products */}
         <RelatedProducts 
           products={relatedProducts} 
-          title="You May Also Like" 
-          subtitle="Related Products" 
+          currentProductId={product.id}
         />
         {/* Recently Viewed Products */}
         <RelatedProducts 
           products={recentlyViewed} 
-          title="Recently Viewed" 
-          subtitle="Your History" 
+          currentProductId={product.id}
         />
       </div>
     </Layout>

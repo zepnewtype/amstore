@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import { useCart } from './Cart';
 import { ImageOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface Product {
   id: number;
@@ -27,6 +28,7 @@ interface ProductGridProps {
   columns?: 2 | 3 | 4;
   layout?: 'grid' | 'list' | 'scroll';
   isLoading?: boolean;
+  autoScroll?: boolean;
 }
 
 const ProductGrid = ({ 
@@ -35,8 +37,35 @@ const ProductGrid = ({
   subtitle,
   columns = 4,
   layout = 'grid',
-  isLoading = false
+  isLoading = false,
+  autoScroll = true
 }: ProductGridProps) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const itemsPerPage = 4;
+  const shouldAutoScroll = autoScroll && products.length > itemsPerPage;
+
+  // Auto-scroll every 3 seconds for featured products
+  useEffect(() => {
+    if (!shouldAutoScroll) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % Math.ceil(products.length - itemsPerPage + 1));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [products.length, shouldAutoScroll]);
+
+  const getVisibleProducts = () => {
+    if (!shouldAutoScroll) return products;
+    
+    const visibleProducts = [];
+    for (let i = 0; i < itemsPerPage; i++) {
+      const index = (currentIndex + i) % products.length;
+      visibleProducts.push(products[index]);
+    }
+    return visibleProducts;
+  };
+
   const getGridClass = () => {
     switch (columns) {
       case 2:
@@ -79,8 +108,8 @@ const ProductGrid = ({
           {/* Scrollable product container with snap */}
           <div className="flex overflow-x-auto pb-6 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide">
             <div className="flex gap-4 md:gap-6">
-              {products.map((product) => (
-                <div key={product.id} className="flex-shrink-0 w-[70vw] max-w-[260px] snap-start">
+              {getVisibleProducts().map((product, index) => (
+                <div key={`${product.id}-${currentIndex}-${index}`} className="flex-shrink-0 w-[70vw] max-w-[260px] snap-start">
                   <Link to={`/products/${product.handle || product.id}`} className="block">
                     <div className="aspect-square w-full bg-gray-50 mb-3">
                       {product.image ? (
@@ -111,6 +140,20 @@ const ProductGrid = ({
               ))}
             </div>
           </div>
+
+          {/* Dots indicator for auto-scroll */}
+          {shouldAutoScroll && (
+            <div className="flex justify-center mt-8 space-x-2">
+              {Array.from({ length: Math.ceil(products.length - itemsPerPage + 1) }).map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                    index === currentIndex ? 'bg-brand-green' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     );
@@ -130,8 +173,8 @@ const ProductGrid = ({
 
           {/* Product list */}
           <div className="space-y-4 md:space-y-8">
-            {products.map((product) => (
-              <div key={product.id} className="product-line-item animate-hover-scale">
+            {getVisibleProducts().map((product, index) => (
+              <div key={`${product.id}-${currentIndex}-${index}`} className="product-line-item animate-hover-scale">
                 <div className="product-line-image">
                   {product.image ? (
                     <img src={product.image || "/placeholder.svg"} alt={product.name} className="w-full h-auto" />
@@ -180,15 +223,30 @@ const ProductGrid = ({
         
         {/* Product grid */}
         <div className={`grid ${getGridClass()} gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10`}>
-          {products.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              {...product} 
-              image={product.image || ''} 
-              handle={product.handle || String(product.id)}
-            />
+          {getVisibleProducts().map((product, index) => (
+            <div key={`${product.id}-${currentIndex}-${index}`}>
+              <ProductCard 
+                {...product} 
+                image={product.image || ''} 
+                handle={product.handle || String(product.id)}
+              />
+            </div>
           ))}
         </div>
+
+        {/* Dots indicator for auto-scroll */}
+        {shouldAutoScroll && (
+          <div className="flex justify-center mt-8 space-x-2">
+            {Array.from({ length: Math.ceil(products.length - itemsPerPage + 1) }).map((_, index) => (
+              <div
+                key={index}
+                className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                  index === currentIndex ? 'bg-brand-green' : 'bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

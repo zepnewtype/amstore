@@ -1,19 +1,30 @@
-
 import { useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
 import { useCart } from './Cart';
 import Cart from './Cart';
 
-const CartIcon = () => {
+interface CartIconProps {
+  onOpenCart?: () => void;
+}
+
+const CartIcon = ({ onOpenCart }: CartIconProps) => {
   const { itemCount } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const handleCartClick = () => {
+    if (onOpenCart) {
+      onOpenCart();
+    } else {
+      setIsCartOpen(true);
+    }
+  };
 
   return (
     <div className="relative">
       <button 
         className="p-2 text-gray-800 hover:text-brand-green transition-colors"
         aria-label="View cart"
-        onClick={() => setIsCartOpen(true)}
+        onClick={handleCartClick}
       >
         <ShoppingBag size={24} />
         {itemCount > 0 && (
@@ -23,7 +34,7 @@ const CartIcon = () => {
         )}
       </button>
       
-      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {!onOpenCart && <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />}
     </div>
   );
 };
